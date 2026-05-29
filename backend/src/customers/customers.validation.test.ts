@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { validateCustomerInput } from "./customers.validation.js";
+import {
+  validateCustomerInput,
+  validateInteractionInput,
+  validateNoteInput
+} from "./customers.validation.js";
+import { HttpError } from "../shared/errors.js";
 
 const validPayload = {
   maKH: " kh201 ",
@@ -13,6 +18,15 @@ const validPayload = {
   ]
 };
 
+function assertBadRequest(fn: () => unknown, message: RegExp): void {
+  assert.throws(fn, (error) => {
+    assert.ok(error instanceof HttpError);
+    assert.equal(error.status, 400);
+    assert.match(error.message, message);
+    return true;
+  });
+}
+
 test("validateCustomerInput normalizes customer data", () => {
   const result = validateCustomerInput(validPayload);
   assert.equal(result.maKH, "KH201");
@@ -22,15 +36,108 @@ test("validateCustomerInput normalizes customer data", () => {
 });
 
 test("validateCustomerInput requires exactly two VIPs", () => {
-  assert.throws(
+  assertBadRequest(
     () => validateCustomerInput({ ...validPayload, vips: [validPayload.vips[0]] }),
     /phải có đúng 2 VIP/
   );
 });
 
 test("validateCustomerInput requires canBoQuanLy", () => {
-  assert.throws(
+  assertBadRequest(
     () => validateCustomerInput({ ...validPayload, canBoQuanLy: " " }),
     /Cán bộ quản lý/
+  );
+});
+
+test("validateCustomerInput rejects malformed body with bad request", () => {
+  assertBadRequest(
+    () => validateCustomerInput(null),
+    /Dữ liệu khách hàng không hợp lệ/
+  );
+});
+
+test("validateCustomerInput rejects malformed VIP entries with bad request", () => {
+  assertBadRequest(
+    () => validateCustomerInput({ ...validPayload, vips: [null, null] }),
+    /VIP không hợp lệ/
+  );
+});
+
+test("validateCustomerInput rejects invalid VIP role", () => {
+  assertBadRequest(
+    () =>
+      validateCustomerInput({
+        ...validPayload,
+        vips: [{ ...validPayload.vips[0], chucVu: "Owner" }, validPayload.vips[1]]
+      }),
+    /Chức vụ VIP không hợp lệ/
+  );
+});
+
+test("validateCustomerInput rejects invalid customer date", () => {
+  assertBadRequest(
+    () => validateCustomerInput({ ...validPayload, ngayThanhLap: "2026-02-31" }),
+    /Ngày không hợp lệ/
+  );
+});
+
+test("validateCustomerInput rejects invalid VIP date", () => {
+  assertBadRequest(
+    () =>
+      validateCustomerInput({
+        ...validPayload,
+        vips: [{ ...validPayload.vips[0], ngaySinh: "2026-02-29" }, validPayload.vips[1]]
+      }),
+    /Ngày không hợp lệ/
+  );
+});
+
+test("validateInteractionInput normalizes interaction data", () => {
+  const result = validateInteractionInput({
+    ngayThang: "2026-05-20",
+    loaiHinh: "Meeting",
+    chiTiet: " Trao đổi hợp đồng "
+  });
+  assert.deepEqual(result, {
+    ngayThang: "2026-05-20",
+    loaiHinh: "Meeting",
+    chiTiet: "Trao đổi hợp đồng"
+  });
+});
+
+test("validateInteractionInput rejects malformed body with bad request", () => {
+  assertBadRequest(
+    () => validateInteractionInput(null),
+    /Dữ liệu tương tác không hợp lệ/
+  );
+});
+
+test("validateInteractionInput rejects invalid interaction type", () => {
+  assertBadRequest(
+    () =>
+      validateInteractionInput({
+        ngayThang: "2026-05-20",
+        loaiHinh: "SMS",
+        chiTiet: "Nhắn tin"
+      }),
+    /Loại hình tương tác không hợp lệ/
+  );
+});
+
+test("validateNoteInput returns trimmed note content", () => {
+  assert.equal(validateNoteInput({ noiDung: " Gọi lại trong tháng 6 " }), "Gọi lại trong tháng 6");
+});
+
+test("validateNoteInput rejects malformed body with bad request", () => {
+  assertBadRequest(
+    () => validateNoteInput(null),
+    /Dữ liệu ghi chú không hợp lệ/
+  );
+});
+
+test("validateNoteInput rejects empty note", () => {
+  assertBadRequest(
+    () => validateNoteInput({ noiDung: " " }),
+    /Nội dung ghi chú/
   );
 });

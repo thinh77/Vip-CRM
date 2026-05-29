@@ -14,8 +14,15 @@ function requireText(value: unknown, field: string, label: string): string {
   return value.trim();
 }
 
+function requireObject(value: unknown, field: string, label: string): Record<string, unknown> {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    throw badRequest(`${label} không hợp lệ.`, field);
+  }
+  return value as Record<string, unknown>;
+}
+
 export function validateCustomerInput(value: unknown): CustomerInput {
-  const input = value as Record<string, unknown>;
+  const input = requireObject(value, "customer", "Dữ liệu khách hàng");
   const maKH = requireText(input.maKH, "maKH", "Mã khách hàng").toUpperCase();
   const tenKH = requireText(input.tenKH, "tenKH", "Tên khách hàng");
   const ngayThanhLap = requireText(input.ngayThanhLap, "ngayThanhLap", "Ngày thành lập");
@@ -27,7 +34,7 @@ export function validateCustomerInput(value: unknown): CustomerInput {
   }
 
   const vips = input.vips.map((item, index) => {
-    const vip = item as Record<string, unknown>;
+    const vip = requireObject(item, `vips.${index}`, "VIP");
     const chucVu = requireText(vip.chucVu, `vips.${index}.chucVu`, "Chức vụ VIP");
     if (!CHUC_VU_VALUES.includes(chucVu as never)) {
       throw badRequest("Chức vụ VIP không hợp lệ.", `vips.${index}.chucVu`);
@@ -47,7 +54,7 @@ export function validateCustomerInput(value: unknown): CustomerInput {
 }
 
 export function validateInteractionInput(value: unknown): InteractionInput {
-  const input = value as Record<string, unknown>;
+  const input = requireObject(value, "interaction", "Dữ liệu tương tác");
   const ngayThang = requireText(input.ngayThang, "ngayThang", "Ngày tương tác");
   assertIsoDate(ngayThang, "ngayThang");
   const loaiHinh = requireText(input.loaiHinh, "loaiHinh", "Loại hình tương tác");
@@ -62,5 +69,6 @@ export function validateInteractionInput(value: unknown): InteractionInput {
 }
 
 export function validateNoteInput(value: unknown): string {
-  return requireText((value as Record<string, unknown>).noiDung, "noiDung", "Nội dung ghi chú");
+  const input = requireObject(value, "note", "Dữ liệu ghi chú");
+  return requireText(input.noiDung, "noiDung", "Nội dung ghi chú");
 }
