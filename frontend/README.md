@@ -18,3 +18,33 @@ View your app in AI Studio: https://ai.studio/apps/009f295b-88ff-4af0-8c52-30c22
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
+
+## PERN Local Development
+
+Start PostgreSQL and create databases:
+
+```bash
+createdb vip_crm
+createdb vip_crm_test
+```
+
+Backend:
+
+```bash
+cd ../backend
+cp .env.example .env
+npm install
+npm run migrate
+npm run seed
+npm run dev
+```
+
+Frontend:
+
+```bash
+cd ../frontend
+npm install
+npm run dev
+```
+
+Open http://localhost:3000.
