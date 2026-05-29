@@ -3,29 +3,34 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from "react";
-import { KhachHang, ChucVu } from "../types";
-import { getCareEventsInMonth, formatDateVN, getEventStatusText, getCurrentMonth } from "../utils";
-import { Calendar, Phone, Cake, Building, ChevronLeft, ChevronRight, MessageSquare, Plus } from "lucide-react";
+import React from "react";
+import { CareEvent, ChucVu } from "../types";
+import { getEventStatusText } from "../utils";
+import { Calendar, Phone, Cake, Building, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 
 interface MonthlyEventsProps {
-  customers: KhachHang[];
+  events: CareEvent[];
+  selectedMonth: number;
+  currentMonth: number;
+  onSelectedMonthChange: (month: number) => void;
   onSelectCustomer: (id: string) => void;
   onQuickInteract: (customerId: string, prepopulatedType: "Call" | "Gift" | "Email", prepopulatedDetail: string) => void;
 }
 
-export default function MonthlyEvents({ customers, onSelectCustomer, onQuickInteract }: MonthlyEventsProps) {
-  const [selectedMonth, setSelectedMonth] = useState<number>(getCurrentMonth());
-  const currentMonth = getCurrentMonth();
-  
-  const events = getCareEventsInMonth(customers, selectedMonth);
-
+export default function MonthlyEvents({
+  events,
+  selectedMonth,
+  currentMonth,
+  onSelectedMonthChange,
+  onSelectCustomer,
+  onQuickInteract
+}: MonthlyEventsProps) {
   const handlePrevMonth = () => {
-    setSelectedMonth((prev) => (prev === 1 ? 12 : prev - 1));
+    onSelectedMonthChange(selectedMonth === 1 ? 12 : selectedMonth - 1);
   };
 
   const handleNextMonth = () => {
-    setSelectedMonth((prev) => (prev === 12 ? 1 : prev + 1));
+    onSelectedMonthChange(selectedMonth === 12 ? 1 : selectedMonth + 1);
   };
 
   // Helper colors for VIP titles

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from "react";
+import React from "react";
 import { KhachHang, ChucVu } from "../types";
 import { formatDateVN, isDateInMonth, getCurrentMonth } from "../utils";
 import { 
@@ -16,6 +16,10 @@ interface CustomerListProps {
   onSelectCustomer: (id: string) => void;
   onEditCustomer: (customer: KhachHang) => void;
   onDeleteCustomer: (id: string) => void;
+  searchTerm: string;
+  roleFilter: string;
+  onSearchTermChange: (value: string) => void;
+  onRoleFilterChange: (value: string) => void;
   onAddNewClick: () => void;
 }
 
@@ -24,34 +28,14 @@ export default function CustomerList({
   onSelectCustomer,
   onEditCustomer,
   onDeleteCustomer,
+  searchTerm,
+  roleFilter,
+  onSearchTermChange,
+  onRoleFilterChange,
   onAddNewClick
 }: CustomerListProps) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [roleFilter, setRoleFilter] = useState<string>("All");
   const currentMonth = getCurrentMonth();
-
-  // Search filter
-  const filteredCustomers = customers.filter((kh) => {
-    const term = searchTerm.toLowerCase().trim();
-    if (!term) return true;
-    
-    // Search by code or customer name
-    const matchCode = kh.maKH.toLowerCase().includes(term);
-    const matchName = kh.tenKH.toLowerCase().includes(term);
-    
-    // Also support searching by VIP name to make it extremely premium
-    const matchVip = kh.vips.some(
-      (vip) => vip && vip.hoTen.toLowerCase().includes(term)
-    );
-
-    return matchCode || matchName || matchVip;
-  });
-
-  // Role filter on VIP profiles
-  const finalCustomers = filteredCustomers.filter((kh) => {
-    if (roleFilter === "All") return true;
-    return kh.vips.some((vip) => vip && vip.chucVu === roleFilter);
-  });
+  const finalCustomers = customers;
 
   // Check if anything has event in May
   const hasEventInMont = (kh: KhachHang) => {
@@ -94,7 +78,7 @@ export default function CustomerList({
               type="text"
               placeholder="Nhập tên, mã số khách hàng..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => onSearchTermChange(e.target.value)}
               className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
               id="search-input-field"
             />
@@ -105,7 +89,7 @@ export default function CustomerList({
             <Filter className="w-3.5 h-3.5 text-slate-500 mr-1.5" />
             <select
               value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
+              onChange={(e) => onRoleFilterChange(e.target.value)}
               className="text-xs bg-transparent focus:outline-none focus:ring-0 font-medium text-slate-700 cursor-pointer pr-1"
               id="filter-role-select"
             >
@@ -190,6 +174,9 @@ export default function CustomerList({
                           <div className="flex items-center space-x-2 mt-1">
                             <span className="text-[10px] text-slate-400">
                               Lịch sử: {kh.lichSuTuongTac.length} tương tác
+                            </span>
+                            <span className="text-[10px] text-slate-400">
+                              Cán bộ: {kh.canBoQuanLy}
                             </span>
                             {kh.ghiChuList.length > 0 && (
                               <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200 font-medium">
@@ -338,6 +325,7 @@ export default function CustomerList({
                     >
                       {kh.tenKH}
                     </button>
+                    <p className="text-[10px] text-slate-500 mt-1">Cán bộ quản lý: {kh.canBoQuanLy}</p>
                     {hasEventsThisMonth && (
                       <span className="text-[10px] bg-red-50 text-red-700 border border-red-200 rounded-md px-2 py-0.5 font-bold mt-1.5 inline-block">
                         Có sự kiện trong tháng 🎂

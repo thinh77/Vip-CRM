@@ -13,6 +13,7 @@ interface CustomerFormProps {
     maKH: string;
     tenKH: string;
     ngayThanhLap: string;
+    canBoQuanLy: string;
     vips: [Omit<VIP, 'id'> & { id?: string }, Omit<VIP, 'id'> & { id?: string }];
   }) => void;
   onCancel: () => void;
@@ -23,6 +24,7 @@ export default function CustomerForm({ initialData, onSubmit, onCancel, existing
   const [maKH, setMaKH] = useState("");
   const [tenKH, setTenKH] = useState("");
   const [ngayThanhLap, setNgayThanhLap] = useState("");
+  const [canBoQuanLy, setCanBoQuanLy] = useState("");
 
   const [vip1, setVip1] = useState<Omit<VIP, 'id'> & { id?: string }>({
     hoTen: "",
@@ -45,6 +47,7 @@ export default function CustomerForm({ initialData, onSubmit, onCancel, existing
       setMaKH(initialData.maKH);
       setTenKH(initialData.tenKH);
       setNgayThanhLap(initialData.ngayThanhLap);
+      setCanBoQuanLy(initialData.canBoQuanLy);
       if (initialData.vips[0]) {
         setVip1({ ...initialData.vips[0] });
       }
@@ -55,6 +58,9 @@ export default function CustomerForm({ initialData, onSubmit, onCancel, existing
       // Set a suggested next code
       const nextNum = existingCodes.length + 101;
       setMaKH(`KH${nextNum}`);
+      setTenKH("");
+      setNgayThanhLap("");
+      setCanBoQuanLy("");
     }
   }, [initialData, existingCodes]);
 
@@ -63,8 +69,8 @@ export default function CustomerForm({ initialData, onSubmit, onCancel, existing
     setError(null);
 
     // Validations
-    if (!maKH.trim() || !tenKH.trim() || !ngayThanhLap) {
-      setError("Vui lòng điền đầy đủ Mã, Tên khách hàng và Ngày thành lập.");
+    if (!maKH.trim() || !tenKH.trim() || !ngayThanhLap || !canBoQuanLy.trim()) {
+      setError("Vui lòng điền đầy đủ Mã, Tên khách hàng, Cán bộ quản lý và Ngày thành lập.");
       return;
     }
 
@@ -91,6 +97,7 @@ export default function CustomerForm({ initialData, onSubmit, onCancel, existing
       maKH: maKH.trim().toUpperCase(),
       tenKH: tenKH.trim(),
       ngayThanhLap,
+      canBoQuanLy: canBoQuanLy.trim(),
       vips: [vip1, vip2]
     });
   };
@@ -166,7 +173,23 @@ export default function CustomerForm({ initialData, onSubmit, onCancel, existing
             </div>
           </div>
 
-          <div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">
+                Cán bộ quản lý <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={canBoQuanLy}
+                onChange={(e) => setCanBoQuanLy(e.target.value)}
+                placeholder="Ví dụ: Nguyễn Minh Anh"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-105 focus:border-blue-500 transition-all font-medium"
+                required
+                id="input-can-bo-quan-ly"
+              />
+            </div>
+
+            <div>
             <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">
               Ngày thành lập <span className="text-rose-500">*</span>
             </label>
@@ -181,6 +204,7 @@ export default function CustomerForm({ initialData, onSubmit, onCancel, existing
             <p className="text-[11px] text-slate-400 mt-1 italic">
               Định dạng kỷ niệm ngày thành lập doanh nghiệp
             </p>
+            </div>
           </div>
         </div>
 

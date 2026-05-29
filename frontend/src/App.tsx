@@ -4,15 +4,19 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { KhachHang, VIP, Interaction, GhiChu } from "./types";
-import { initialCustomers } from "./initialData";
-import { getCurrentMonth, getCareEventsInMonth } from "./utils";
+import { KhachHang, Interaction } from "./types";
+import { customersApi } from "./api/customersApi";
+import type { CustomerPayload } from "./api/customersApi";
+import { eventsApi } from "./api/eventsApi";
+import { statsApi } from "./api/statsApi";
+import type { CareEvent, DashboardStats } from "./types";
+import { getCurrentMonth } from "./utils";
 import MonthlyEvents from "./components/MonthlyEvents";
 import CustomerList from "./components/CustomerList";
 import CustomerForm from "./components/CustomerForm";
 import CustomerDetails from "./components/CustomerDetails";
-import { 
-  Users, Calendar, ClipboardList, Database, Sparkles, AlertCircle, 
+import {
+  Users, Calendar, ClipboardList, Database, Sparkles, AlertCircle,
   HelpCircle, CheckCircle2, Bookmark, HeartHandshake, LogIn
 } from "lucide-react";
 
@@ -21,26 +25,47 @@ export default function App() {
   const [activeCustomerId, setActiveCustomerId] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [customerToEdit, setCustomerToEdit] = useState<KhachHang | undefined>(undefined);
-  
+  const [events, setEvents] = useState<CareEvent[]>([]);
+  const [stats, setStats] = useState<DashboardStats>({ totalCustomers: 0, monthEventsCount: 0, totalInteractions: 0 });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState("All");
+  const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth());
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
   // App Toast Messages
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
 
-  // Load from local storage on render
-  useEffect(() => {
-    const stored = localStorage.getItem("crm_customers");
-    if (stored) {
-      try {
-        setCustomers(JSON.parse(stored));
-      } catch (e) {
-        console.error("Lỗi phân tích cú pháp dữ liệu cũ, tải lại dữ liệu mẫu.");
-        setCustomers(initialCustomers);
-        localStorage.setItem("crm_customers", JSON.stringify(initialCustomers));
-      }
-    } else {
-      setCustomers(initialCustomers);
-      localStorage.setItem("crm_customers", JSON.stringify(initialCustomers));
+  // Fetch events and stats on initial load
+  const loadCustomers = async () => {
+    const list = await customersApi.list({ search: searchTerm, role: roleFilter });
+    setCustomers(list);
+    if (activeCustomerId) {
+      const stillExists = list.some((customer) => customer.id === activeCustomerId);
+      if (!stillExists) setActiveCustomerId(null);
     }
-  }, []);
+  };
+
+  const loadDashboard = async () => {
+    const [nextEvents, nextStats] = await Promise.all([
+      eventsApi.listByMonth(selectedMonth),
+      statsApi.get()
+    ]);
+    setEvents(nextEvents);
+    setStats(nextStats);
+  };
+
+  const refreshAll = async () => {
+    setLoadError(null);
+    await Promise.all([loadCustomers(), loadDashboard()]);
+  };
+
+  useEffect(() => {
+    setIsLoading(true);
+    refreshAll()
+      .catch((error) => setLoadError(error instanceof Error ? error.message : "Không thể tải dữ liệu."))
+      .finally(() => setIsLoading(false));
+  }, [searchTerm, roleFilter, selectedMonth]);
 
   // Show auto-dismissing notifications
   const showToast = (message: string, type: "success" | "error" | "info" = "success") => {
@@ -50,215 +75,117 @@ export default function App() {
     }, 4000);
   };
 
-  // Helper to persist state
-  const saveAndSync = (newCustomers: KhachHang[]) => {
-    setCustomers(newCustomers);
-    localStorage.setItem("crm_customers", JSON.stringify(newCustomers));
-  };
-
   // CREATE or UPDATE customer
-  const handleFormSubmit = (formData: {
-    maKH: string;
-    tenKH: string;
-    ngayThanhLap: string;
-    vips: [Omit<VIP, 'id'> & { id?: string }, Omit<VIP, 'id'> & { id?: string }];
-  }) => {
-    if (customerToEdit) {
-      // UPDATE Operation (U in CRUD)
-      const updatedList = customers.map((kh) => {
-        if (kh.id === customerToEdit.id) {
-          // preserve interactions list & notes
-          return {
-            ...kh,
-            maKH: formData.maKH,
-            tenKH: formData.tenKH,
-            ngayThanhLap: formData.ngayThanhLap,
-            vips: [
-              {
-                id: formData.vips[0].id || `vip_1_${Date.now()}`,
-                hoTen: formData.vips[0].hoTen,
-                chucVu: formData.vips[0].chucVu,
-                ngaySinh: formData.vips[0].ngaySinh,
-                soDienThoai: formData.vips[0].soDienThoai
-              },
-              {
-                id: formData.vips[1].id || `vip_2_${Date.now()}`,
-                hoTen: formData.vips[1].hoTen,
-                chucVu: formData.vips[1].chucVu,
-                ngaySinh: formData.vips[1].ngaySinh,
-                soDienThoai: formData.vips[1].soDienThoai
-              }
-            ] as [VIP, VIP]
-          };
-        }
-        return kh;
-      });
-      saveAndSync(updatedList);
-      showToast(`Đã cập nhật thông tin khách hàng ${formData.maKH} thành công.`);
-    } else {
-      // CREATE Operation (C in CRUD)
-      const newCustomer: KhachHang = {
-        id: `cust_${Date.now()}`,
-        maKH: formData.maKH,
-        tenKH: formData.tenKH,
-        canBoQuanLy: "Nguyễn Minh Anh", // default manager for demo
-        ngayThanhLap: formData.ngayThanhLap,
-        vips: [
-          {
-            id: `vip_${Date.now()}_1`,
-            hoTen: formData.vips[0].hoTen,
-            chucVu: formData.vips[0].chucVu,
-            ngaySinh: formData.vips[0].ngaySinh,
-            soDienThoai: formData.vips[0].soDienThoai
-          },
-          {
-            id: `vip_${Date.now()}_2`,
-            hoTen: formData.vips[1].hoTen,
-            chucVu: formData.vips[1].chucVu,
-            ngaySinh: formData.vips[1].ngaySinh,
-            soDienThoai: formData.vips[1].soDienThoai
-          }
-        ] as [VIP, VIP],
-        lichSuTuongTac: [],
-        ghiChuList: []
-      };
-      const updatedList = [...customers, newCustomer];
-      saveAndSync(updatedList);
-      showToast(`Đã thêm mới bản ghi khách hàng ${formData.maKH} thành công.`);
-    }
+  const handleFormSubmit = async (formData: CustomerPayload) => {
+    try {
+      if (customerToEdit) {
+        await customersApi.update(customerToEdit.id, formData);
+        showToast(`Đã cập nhật thông tin khách hàng ${formData.maKH} thành công.`);
+      } else {
+        await customersApi.create(formData);
+        showToast(`Đã thêm mới bản ghi khách hàng ${formData.maKH} thành công.`);
+      }
 
-    setIsFormOpen(false);
-    setCustomerToEdit(undefined);
+      await refreshAll();
+      setIsFormOpen(false);
+      setCustomerToEdit(undefined);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Không thể lưu khách hàng.", "error");
+    }
   };
 
   // DELETE customer (D in CRUD)
-  const handleDeleteCustomer = (id: string) => {
+  const handleDeleteCustomer = async (id: string) => {
     const target = customers.find((kh) => kh.id === id);
     if (!target) return;
 
     if (window.confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn khách hàng "${target.maKH} - ${target.tenKH}"? Hành động này không thể hoàn tác.`)) {
-      const updatedList = customers.filter((kh) => kh.id !== id);
-      saveAndSync(updatedList);
-      showToast(`Đã xóa thành công bản ghi khách hàng ${target.maKH}.`, "info");
-      
-      if (activeCustomerId === id) {
-        setActiveCustomerId(null);
+      try {
+        await customersApi.remove(id);
+        await refreshAll();
+        showToast(`Đã xóa thành công bản ghi khách hàng ${target.maKH}.`, "info");
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : "Không thể xóa khách hàng.", "error");
       }
     }
   };
 
   // Quick Interaction Log Shortcut from Events Panel
   const handleQuickInteraction = (
-    customerId: string, 
-    prepopulatedType: "Call" | "Gift" | "Email", 
+    customerId: string,
+    prepopulatedType: "Call" | "Gift" | "Email",
     prepopulatedDetail: string
   ) => {
     const todayStr = new Date().toISOString().split("T")[0];
-    const newInt: Interaction = {
-      id: `int_${Date.now()}`,
+    customersApi.addInteraction(customerId, {
       ngayThang: todayStr,
       loaiHinh: prepopulatedType,
       chiTiet: prepopulatedDetail
-    };
-
-    const updatedList = customers.map((kh) => {
-      if (kh.id === customerId) {
-        return {
-          ...kh,
-          lichSuTuongTac: [newInt, ...kh.lichSuTuongTac]
-        };
-      }
-      return kh;
-    });
-
-    saveAndSync(updatedList);
-    showToast(`Đã ghi nhanh nhật ký tương tác chăm sóc khách hàng ngày hôm nay.`);
-    setActiveCustomerId(customerId); // switch preview to this client
+    })
+      .then(refreshAll)
+      .then(() => {
+        showToast("Đã ghi nhanh nhật ký tương tác chăm sóc khách hàng ngày hôm nay.");
+        setActiveCustomerId(customerId);
+      })
+      .catch((error) => showToast(error instanceof Error ? error.message : "Không thể ghi nhanh tương tác.", "error"));
   };
 
   // Interaction logs CRUD
-  const handleAddInteraction = (customerId: string, intData: Omit<Interaction, "id">) => {
-    const newInt: Interaction = {
-      id: `int_${Date.now()}`,
-      ...intData
-    };
-    const updatedList = customers.map((kh) => {
-      if (kh.id === customerId) {
-        return {
-          ...kh,
-          lichSuTuongTac: [newInt, ...kh.lichSuTuongTac]
-        };
-      }
-      return kh;
-    });
-    saveAndSync(updatedList);
-    showToast("Thêm hoạt động tương tác mới thành công.");
+  const handleAddInteraction = async (customerId: string, intData: Omit<Interaction, "id">) => {
+    try {
+      await customersApi.addInteraction(customerId, intData);
+      await refreshAll();
+      showToast("Thêm hoạt động tương tác mới thành công.");
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Không thể thêm tương tác.", "error");
+    }
   };
 
-  const handleDeleteInteraction = (customerId: string, interactionId: string) => {
-    const updatedList = customers.map((kh) => {
-      if (kh.id === customerId) {
-        return {
-          ...kh,
-          lichSuTuongTac: kh.lichSuTuongTac.filter((i) => i.id !== interactionId)
-        };
-      }
-      return kh;
-    });
-    saveAndSync(updatedList);
-    showToast("Đã xóa nhật ký hoạt động tương tác.", "info");
+  const handleDeleteInteraction = async (customerId: string, interactionId: string) => {
+    try {
+      await customersApi.deleteInteraction(customerId, interactionId);
+      await refreshAll();
+      showToast("Đã xóa nhật ký hoạt động tương tác.", "info");
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Không thể xóa tương tác.", "error");
+    }
   };
 
   // Notes logs CRUD
-  const handleAddNote = (customerId: string, content: string) => {
-    const todayStr = new Date().toISOString().split("T")[0];
-    const newNote: GhiChu = {
-      id: `note_${Date.now()}`,
-      ngayTao: todayStr,
-      noiDung: content
-    };
-    const updatedList = customers.map((kh) => {
-      if (kh.id === customerId) {
-        return {
-          ...kh,
-          ghiChuList: [newNote, ...kh.ghiChuList]
-        };
-      }
-      return kh;
-    });
-    saveAndSync(updatedList);
-    showToast("Thêm ghi chú khách hàng thành công.");
+  const handleAddNote = async (customerId: string, content: string) => {
+    try {
+      await customersApi.addNote(customerId, content);
+      await refreshAll();
+      showToast("Thêm ghi chú khách hàng thành công.");
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Không thể thêm ghi chú.", "error");
+    }
   };
 
-  const handleDeleteNote = (customerId: string, noteId: string) => {
-    const updatedList = customers.map((kh) => {
-      if (kh.id === customerId) {
-        return {
-          ...kh,
-          ghiChuList: kh.ghiChuList.filter((n) => n.id !== noteId)
-        };
-      }
-      return kh;
-    });
-    saveAndSync(updatedList);
-    showToast("Đã xóa ghi chú thành công.", "info");
+  const handleDeleteNote = async (customerId: string, noteId: string) => {
+    try {
+      await customersApi.deleteNote(customerId, noteId);
+      await refreshAll();
+      showToast("Đã xóa ghi chú thành công.", "info");
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Không thể xóa ghi chú.", "error");
+    }
   };
 
   // Active customer finder
   const activeCustomer = customers.find((kh) => kh.id === activeCustomerId);
 
-  // Compute stats for overview widget
-  const totalCustomers = customers.length;
-  const currentMonthNum = getCurrentMonth();
-  const monthEventsCount = getCareEventsInMonth(customers, currentMonthNum).length;
-  const totalInteractions = customers.reduce((sum, kh) => sum + kh.lichSuTuongTac.length, 0);
+  // Backend-owned dashboard stats
+  const totalCustomers = stats.totalCustomers;
+  const monthEventsCount = stats.monthEventsCount;
+  const totalInteractions = stats.totalInteractions;
 
   return (
     <div className="min-h-screen bg-slate-50/70 text-slate-900 font-sans pb-16 antialiased" id="main-applet-root">
-      
+
       {/* Toast Notification Box */}
       {toast && (
-        <div 
+        <div
           className="fixed bottom-5 right-5 z-50 p-4 rounded-xl shadow-xl border flex items-center space-x-3 max-w-sm animate-bounce text-sm font-semibold bg-white border-slate-200"
           id="global-alert-toast"
         >
@@ -304,11 +231,25 @@ export default function App() {
 
       {/* Main Core Area: Container layout */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 space-y-6">
-        
+        {loadError && (
+          <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-800">
+            {loadError}
+          </div>
+        )}
+
+        {isLoading && (
+          <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-800">
+            Đang tải dữ liệu CRM...
+          </div>
+        )}
+
         {/* 1. Monthly Events - First Section: "Màn hình chính vào web là thấy luôn" */}
         <section id="banner-events-this-month">
-          <MonthlyEvents 
-            customers={customers}
+          <MonthlyEvents
+            events={events}
+            selectedMonth={selectedMonth}
+            currentMonth={getCurrentMonth()}
+            onSelectedMonthChange={setSelectedMonth}
             onSelectCustomer={(id) => {
               setActiveCustomerId(id);
               setIsFormOpen(false);
@@ -369,6 +310,10 @@ export default function App() {
               }, 50);
             }}
             onDeleteCustomer={handleDeleteCustomer}
+            searchTerm={searchTerm}
+            roleFilter={roleFilter}
+            onSearchTermChange={setSearchTerm}
+            onRoleFilterChange={setRoleFilter}
             onAddNewClick={() => {
               setCustomerToEdit(undefined);
               setIsFormOpen(true);
