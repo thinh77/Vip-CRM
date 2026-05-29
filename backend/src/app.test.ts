@@ -30,3 +30,9 @@ test("GET /api/health returns ok", async () => {
   assert.equal(response.status, 200);
   assert.deepEqual(await response.json(), { ok: true });
 });
+
+test("GET /api/customers responds with JSON", async () => {
+  const response = await fetch(`${baseUrl}/api/customers`);
+  assert.notEqual(response.status, 404);
+  assert.match(response.headers.get("content-type") || "", /application\/json/);
+});
