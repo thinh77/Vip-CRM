@@ -124,6 +124,18 @@ test("validateInteractionInput rejects invalid interaction type", () => {
   );
 });
 
+test("validateInteractionInput rejects invalid interaction date", () => {
+  assertBadRequest(
+    () =>
+      validateInteractionInput({
+        ngayThang: "2026-02-31",
+        loaiHinh: "Call",
+        chiTiet: "Gọi điện"
+      }),
+    /Ngày không hợp lệ/
+  );
+});
+
 test("validateNoteInput returns trimmed note content", () => {
   assert.equal(validateNoteInput({ noiDung: " Gọi lại trong tháng 6 " }), "Gọi lại trong tháng 6");
 });
