@@ -1,0 +1,6 @@
+{
+  "name": "Quản lý Chăm sóc Khách hàng",
+  "description": "Hệ thống quản lý thông tin khách hàng, chăm sóc khách hàng VIP, theo dõi lịch sử tương tác và nhắc nhở sự kiện kỷ niệm trong tháng.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
