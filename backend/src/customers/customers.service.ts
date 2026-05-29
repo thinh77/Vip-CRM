@@ -28,7 +28,7 @@ export type CustomerListFilters = {
 
 export type CustomersRepositoryPort = {
   findByCode(maKH: string): Promise<CustomerIdentity | null>;
-  findById(id: string): Promise<CustomerRecord | CustomerIdentity | null>;
+  findById(id: string): Promise<CustomerRecord | null>;
   list(filters?: CustomerListFilters): Promise<CustomerRecord[]>;
   create(input: CustomerInput): Promise<CustomerRecord>;
   update(id: string, input: CustomerInput): Promise<CustomerRecord>;
@@ -39,7 +39,7 @@ export type CustomersRepositoryPort = {
   deleteNote(customerId: string, noteId: string): Promise<boolean>;
 };
 
-function ensureFound(customer: CustomerRecord | CustomerIdentity | null): CustomerRecord | CustomerIdentity {
+function ensureFound(customer: CustomerRecord | null): CustomerRecord {
   if (!customer) {
     throw notFound("Không tìm thấy khách hàng.");
   }
@@ -53,11 +53,7 @@ export function createCustomersService(repository: CustomersRepositoryPort) {
     },
 
     async getCustomer(id: string): Promise<CustomerRecord> {
-      const customer = ensureFound(await repository.findById(id));
-      if (!("maKH" in customer)) {
-        throw notFound("Không tìm thấy khách hàng.");
-      }
-      return customer;
+      return ensureFound(await repository.findById(id));
     },
 
     async createCustomer(input: CustomerInput): Promise<CustomerRecord> {

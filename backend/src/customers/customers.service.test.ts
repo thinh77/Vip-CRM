@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { createCustomersService, type CustomersRepositoryPort } from "./customers.service.js";
+import {
+  createCustomersService,
+  type CustomerRecord,
+  type CustomersRepositoryPort
+} from "./customers.service.js";
 import type { CustomerInput } from "../shared/types.js";
 
 const baseInput: CustomerInput = {
@@ -12,6 +16,13 @@ const baseInput: CustomerInput = {
     { hoTen: "VIP 1", chucVu: "Giám đốc", ngaySinh: "1985-08-15", soDienThoai: "0912345678" },
     { hoTen: "VIP 2", chucVu: "Kế toán trưởng", ngaySinh: "1990-05-25", soDienThoai: "0987654321" }
   ]
+};
+
+const baseRecord: CustomerRecord = {
+  id: "cust-1",
+  ...baseInput,
+  lichSuTuongTac: [],
+  ghiChuList: []
 };
 
 function fakeRepository(overrides: Partial<CustomersRepositoryPort> = {}): CustomersRepositoryPort {
@@ -37,7 +48,7 @@ test("createCustomer rejects duplicate maKH", async () => {
 
 test("updateCustomer preserves existing interactions and notes through repository update", async () => {
   const service = createCustomersService(fakeRepository({
-    findById: async () => ({ id: "cust-1" }),
+    findById: async () => baseRecord,
     update: async (id, input) => ({
       id,
       ...input,
