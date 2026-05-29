@@ -32,10 +32,35 @@ export interface GhiChu {
 
 export interface KhachHang {
   id: string;
-  maKH: string; // Customer Code, e.g., KH001
+  maKH: string;
   tenKH: string;
-  ngayThanhLap: string; // ISO format string YYYY-MM-DD
-  vips: [VIP, VIP]; // Exactly 2 VIPs per customer
+  ngayThanhLap: string;
+  canBoQuanLy: string;
+  vips: [VIP, VIP];
   lichSuTuongTac: Interaction[];
   ghiChuList: GhiChu[];
+}
+
+export interface CareEvent {
+  id: string;
+  customerId: string;
+  customerName: string;
+  customerCode: string;
+  type: "FOUNDING" | "VIP_BIRTHDAY";
+  title: string;
+  vipName?: string;
+  vipPhone?: string;
+  vipRole?: string;
+  originalYear: number;
+  dateStr: string;
+  day: number;
+  daysRemaining: number;
+  isToday: boolean;
+  age: number;
+}
+
+export interface DashboardStats {
+  totalCustomers: number;
+  monthEventsCount: number;
+  totalInteractions: number;
 }

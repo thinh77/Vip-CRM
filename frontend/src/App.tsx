@@ -101,6 +101,7 @@ export default function App() {
         id: `cust_${Date.now()}`,
         maKH: formData.maKH,
         tenKH: formData.tenKH,
+        canBoQuanLy: "Nguyễn Minh Anh", // default manager for demo
         ngayThanhLap: formData.ngayThanhLap,
         vips: [
           {

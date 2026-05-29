@@ -11,6 +11,7 @@ export const initialCustomers: KhachHang[] = [
     maKH: "KH201",
     tenKH: "Công ty TNHH Giải pháp Công nghệ Việt",
     ngayThanhLap: "2018-05-12", // May (Current Month!)
+    canBoQuanLy: "Nguyễn Minh Anh",
     vips: [
       {
         id: "vip_1_1",
@@ -54,6 +55,7 @@ export const initialCustomers: KhachHang[] = [
     maKH: "KH306",
     tenKH: "Trường Tiểu học Chu Văn An",
     ngayThanhLap: "2010-09-05",
+    canBoQuanLy: "Nguyễn Minh Anh",
     vips: [
       {
         id: "vip_2_1",
@@ -91,6 +93,7 @@ export const initialCustomers: KhachHang[] = [
     maKH: "KH511",
     tenKH: "Tập đoàn Đầu tư & Xây dựng An Phát",
     ngayThanhLap: "2015-11-20",
+    canBoQuanLy: "Nguyễn Minh Anh",
     vips: [
       {
         id: "vip_3_1",
@@ -134,6 +137,7 @@ export const initialCustomers: KhachHang[] = [
     maKH: "KH088",
     tenKH: "Trường THPT Phan Đình Phùng",
     ngayThanhLap: "1995-10-15",
+    canBoQuanLy: "Nguyễn Minh Anh",
     vips: [
       {
         id: "vip_4_1",
@@ -171,6 +175,7 @@ export const initialCustomers: KhachHang[] = [
     maKH: "KH144",
     tenKH: "Hợp tác xã Nông nghiệp Đà Lạt Organic",
     ngayThanhLap: "2021-02-28",
+    canBoQuanLy: "Nguyễn Minh Anh",
     vips: [
       {
         id: "vip_5_1",
