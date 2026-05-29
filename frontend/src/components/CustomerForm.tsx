@@ -28,7 +28,7 @@ export default function CustomerForm({ initialData, onSubmit, onCancel, existing
 
   const [vip1, setVip1] = useState<Omit<VIP, 'id'> & { id?: string }>({
     hoTen: "",
-    chucVu: ChucVu.GiamDoc,
+    chucVu: ChucVu.LanhDaoDonVi,
     ngaySinh: "",
     soDienThoai: ""
   });
@@ -108,7 +108,7 @@ export default function CustomerForm({ initialData, onSubmit, onCancel, existing
       <div className="bg-slate-50 border-b border-slate-200 px-6 py-4 flex items-center justify-between">
         <div>
           <h2 className="text-sm sm:text-base font-bold font-sans text-slate-800 flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block shrink-0" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#B01137] inline-block shrink-0" />
             {initialData ? "Cập Nhật Thông Tin Khách Hàng" : "Thêm Mới Khách Hàng Chăm Sóc"}
           </h2>
           <p className="text-[11px] text-slate-500 mt-0.5 font-medium">
@@ -243,8 +243,7 @@ export default function CustomerForm({ initialData, onSubmit, onCancel, existing
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-105 focus:border-blue-500 transition-all cursor-pointer font-medium text-slate-700"
                 id="select-vip1-chucvu"
               >
-                <option value={ChucVu.GiamDoc}>Giám đốc</option>
-                <option value={ChucVu.HieuTruong}>Hiệu trưởng</option>
+                <option value={ChucVu.LanhDaoDonVi}>Lãnh đạo đơn vị</option>
                 <option value={ChucVu.KeToanTruong}>Kế toán trưởng</option>
               </select>
             </div>
@@ -315,8 +314,7 @@ export default function CustomerForm({ initialData, onSubmit, onCancel, existing
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-105 focus:border-blue-500 transition-all cursor-pointer font-medium text-slate-700"
                 id="select-vip2-chucvu"
               >
-                <option value={ChucVu.GiamDoc}>Giám đốc</option>
-                <option value={ChucVu.HieuTruong}>Hiệu trưởng</option>
+                <option value={ChucVu.LanhDaoDonVi}>Lãnh đạo đơn vị</option>
                 <option value={ChucVu.KeToanTruong}>Kế toán trưởng</option>
               </select>
             </div>
@@ -364,7 +362,7 @@ export default function CustomerForm({ initialData, onSubmit, onCancel, existing
           </button>
           <button
             type="submit"
-            className="flex items-center space-x-2 px-5 py-2.5 bg-blue-600 border border-transparent text-xs font-bold rounded-lg text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all shadow-xs cursor-pointer"
+            className="flex items-center space-x-2 px-5 py-2.5 bg-[#B01137] border border-transparent text-xs font-bold rounded-lg text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all shadow-xs cursor-pointer"
             id="btn-submit-form"
           >
             <Save className="w-3.5 h-3.5" />

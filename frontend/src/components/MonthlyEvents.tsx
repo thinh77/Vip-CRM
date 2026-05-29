@@ -36,10 +36,8 @@ export default function MonthlyEvents({
   // Helper colors for VIP titles
   const getRoleBadgeStyle = (role?: string) => {
     switch (role) {
-      case ChucVu.GiamDoc:
+      case ChucVu.LanhDaoDonVi:
         return "bg-amber-50 text-amber-700 border-amber-200";
-      case ChucVu.HieuTruong:
-        return "bg-indigo-50 text-indigo-700 border-indigo-200";
       case ChucVu.KeToanTruong:
         return "bg-emerald-50 text-emerald-700 border-emerald-200";
       default:
@@ -136,8 +134,8 @@ export default function MonthlyEvents({
                   <div className="flex items-start space-x-3 mb-4">
                     <div className={`p-2 rounded-lg mt-0.5 shrink-0 border ${
                       event.type === "FOUNDING" 
-                        ? "bg-rose-50 text-rose-600 border-rose-100" 
-                        : "bg-blue-50 text-blue-600 border-blue-100"
+                        ? "bg-rose-50 text-[#B01137] border-rose-100" 
+                        : "bg-blue-50 text-[#B01137] border-blue-100"
                     }`}>
                       {event.type === "FOUNDING" ? <Building className="w-4 h-4" /> : <Cake className="w-4 h-4" />}
                     </div>
@@ -158,7 +156,7 @@ export default function MonthlyEvents({
                         onClick={() => onSelectCustomer(event.customerId)}
                         className="text-xs text-slate-500 hover:text-blue-600 text-left hover:underline mt-1 font-medium block"
                       >
-                        {event.customerCode} - {event.customerName}
+                        {event.customerName}
                       </button>
                     </div>
                   </div>
@@ -187,7 +185,7 @@ export default function MonthlyEvents({
                             : `Ghi nhận liên hệ chúc mừng sinh nhật ${event.vipRole} ${event.vipName} tròn ${event.age} tuổi.`;
                           onQuickInteract(event.customerId, event.type === "FOUNDING" ? "Gift" : "Call", logDetail);
                         }}
-                        className="flex items-center space-x-1 text-[11px] bg-blue-600 hover:bg-blue-700 text-white font-bold px-2.5 py-1 rounded-md transition-all shadow-sm cursor-pointer"
+                        className="flex items-center space-x-1 text-[11px] bg-[#B01137] hover:bg-blue-700 text-white font-bold px-2.5 py-1 rounded-md transition-all shadow-sm cursor-pointer"
                         title="Ghi nhận tương tác chăm sóc khách hàng"
                         id={`quick-interact-btn-${event.id}`}
                       >

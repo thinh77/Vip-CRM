@@ -4,8 +4,7 @@
  */
 
 export enum ChucVu {
-  GiamDoc = "Giám đốc",
-  HieuTruong = "Hiệu trưởng",
+  LanhDaoDonVi = "Lãnh đạo đơn vị",
   KeToanTruong = "Kế toán trưởng"
 }
 

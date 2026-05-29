@@ -15,7 +15,7 @@ create table if not exists vips (
   customer_id uuid not null references customers(id) on delete cascade,
   position smallint not null check (position in (1, 2)),
   ho_ten text not null,
-  chuc_vu text not null check (chuc_vu in ('Giám đốc', 'Hiệu trưởng', 'Kế toán trưởng')),
+  chuc_vu text not null check (chuc_vu in ('Lãnh đạo đơn vị', 'Kế toán trưởng')),
   ngay_sinh date not null,
   so_dien_thoai text not null,
   created_at timestamptz not null default now(),

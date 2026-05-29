@@ -16,7 +16,7 @@ export const initialCustomers: KhachHang[] = [
       {
         id: "vip_1_1",
         hoTen: "Trần Huy Hoàng",
-        chucVu: ChucVu.GiamDoc,
+        chucVu: ChucVu.LanhDaoDonVi,
         ngaySinh: "1985-08-15",
         soDienThoai: "0912345678"
       },
@@ -60,7 +60,7 @@ export const initialCustomers: KhachHang[] = [
       {
         id: "vip_2_1",
         hoTen: "Lê Thị Thanh Vân",
-        chucVu: ChucVu.HieuTruong,
+        chucVu: ChucVu.LanhDaoDonVi,
         ngaySinh: "1978-05-04", // May (Current Month!)
         soDienThoai: "0905112233"
       },
@@ -77,7 +77,7 @@ export const initialCustomers: KhachHang[] = [
         id: "int_2_1",
         ngayThang: "2026-05-04",
         loaiHinh: "Call",
-        chiTiet: "Gọi điện chúc mừng sinh nhật Hiệu trưởng Thanh Vân. Chị Vân gửi lời cảm ơn hệ thống."
+        chiTiet: "Gọi điện chúc mừng sinh nhật Lãnh đạo đơn vị Thanh Vân. Chị Vân gửi lời cảm ơn hệ thống."
       }
     ],
     ghiChuList: [
@@ -98,7 +98,7 @@ export const initialCustomers: KhachHang[] = [
       {
         id: "vip_3_1",
         hoTen: "Phan Văn Đạt",
-        chucVu: ChucVu.GiamDoc,
+        chucVu: ChucVu.LanhDaoDonVi,
         ngaySinh: "1980-03-10",
         soDienThoai: "0977889900"
       },
@@ -142,7 +142,7 @@ export const initialCustomers: KhachHang[] = [
       {
         id: "vip_4_1",
         hoTen: "Đặng Minh Tuấn",
-        chucVu: ChucVu.HieuTruong,
+        chucVu: ChucVu.LanhDaoDonVi,
         ngaySinh: "1972-12-30",
         soDienThoai: "0966778899"
       },
@@ -180,7 +180,7 @@ export const initialCustomers: KhachHang[] = [
       {
         id: "vip_5_1",
         hoTen: "Trương Quốc Khánh",
-        chucVu: ChucVu.GiamDoc,
+        chucVu: ChucVu.LanhDaoDonVi,
         ngaySinh: "1992-05-15", // May (Current Month!)
         soDienThoai: "0983111222"
       },
@@ -197,7 +197,7 @@ export const initialCustomers: KhachHang[] = [
         id: "int_5_1",
         ngayThang: "2026-05-15",
         loaiHinh: "Call",
-        chiTiet: "Gọi điện chúc mừng sinh nhật Giám đốc Quốc Khánh."
+        chiTiet: "Gọi điện chúc mừng sinh nhật Lãnh đạo đơn vị Quốc Khánh."
       }
     ],
     ghiChuList: []

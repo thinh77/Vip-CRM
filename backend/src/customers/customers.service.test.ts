@@ -13,7 +13,7 @@ const baseInput: CustomerInput = {
   ngayThanhLap: "2018-05-12",
   canBoQuanLy: "Nguyễn Minh Anh",
   vips: [
-    { hoTen: "VIP 1", chucVu: "Giám đốc", ngaySinh: "1985-08-15", soDienThoai: "0912345678" },
+    { hoTen: "VIP 1", chucVu: "Lãnh đạo đơn vị", ngaySinh: "1985-08-15", soDienThoai: "0912345678" },
     { hoTen: "VIP 2", chucVu: "Kế toán trưởng", ngaySinh: "1990-05-25", soDienThoai: "0987654321" }
   ]
 };

@@ -9,7 +9,7 @@ type SeedCustomer = {
   vips: Array<{
     position: 1 | 2;
     hoTen: string;
-    chucVu: "Giám đốc" | "Hiệu trưởng" | "Kế toán trưởng";
+    chucVu: "Lãnh đạo đơn vị" | "Kế toán trưởng";
     ngaySinh: string;
     soDienThoai: string;
   }>;
@@ -34,7 +34,7 @@ const seedCustomers: SeedCustomer[] = [
       {
         position: 1,
         hoTen: "Trần Huy Hoàng",
-        chucVu: "Giám đốc",
+        chucVu: "Lãnh đạo đơn vị",
         ngaySinh: "1985-08-15",
         soDienThoai: "0912345678"
       },
@@ -74,7 +74,7 @@ const seedCustomers: SeedCustomer[] = [
       {
         position: 1,
         hoTen: "Lê Thị Thanh Vân",
-        chucVu: "Hiệu trưởng",
+        chucVu: "Lãnh đạo đơn vị",
         ngaySinh: "1978-05-04",
         soDienThoai: "0905112233"
       },
@@ -90,7 +90,7 @@ const seedCustomers: SeedCustomer[] = [
       {
         ngayThang: "2026-05-04",
         loaiHinh: "Call",
-        chiTiet: "Gọi điện chúc mừng sinh nhật Hiệu trưởng Thanh Vân. Chị Vân gửi lời cảm ơn hệ thống."
+        chiTiet: "Gọi điện chúc mừng sinh nhật Lãnh đạo đơn vị Thanh Vân. Chị Vân gửi lời cảm ơn hệ thống."
       }
     ],
     notes: [
@@ -109,7 +109,7 @@ const seedCustomers: SeedCustomer[] = [
       {
         position: 1,
         hoTen: "Phan Văn Đạt",
-        chucVu: "Giám đốc",
+        chucVu: "Lãnh đạo đơn vị",
         ngaySinh: "1980-03-10",
         soDienThoai: "0977889900"
       },
@@ -149,7 +149,7 @@ const seedCustomers: SeedCustomer[] = [
       {
         position: 1,
         hoTen: "Đặng Minh Tuấn",
-        chucVu: "Hiệu trưởng",
+        chucVu: "Lãnh đạo đơn vị",
         ngaySinh: "1972-12-30",
         soDienThoai: "0966778899"
       },
@@ -184,7 +184,7 @@ const seedCustomers: SeedCustomer[] = [
       {
         position: 1,
         hoTen: "Trương Quốc Khánh",
-        chucVu: "Giám đốc",
+        chucVu: "Lãnh đạo đơn vị",
         ngaySinh: "1992-05-15",
         soDienThoai: "0983111222"
       },
@@ -200,7 +200,7 @@ const seedCustomers: SeedCustomer[] = [
       {
         ngayThang: "2026-05-15",
         loaiHinh: "Call",
-        chiTiet: "Gọi điện chúc mừng sinh nhật Giám đốc Quốc Khánh."
+        chiTiet: "Gọi điện chúc mừng sinh nhật Lãnh đạo đơn vị Quốc Khánh."
       }
     ],
     notes: []

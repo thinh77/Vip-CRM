@@ -13,7 +13,7 @@ const validPayload = {
   ngayThanhLap: "2018-05-12",
   canBoQuanLy: " Nguyễn Minh Anh ",
   vips: [
-    { hoTen: "VIP 1", chucVu: "Giám đốc", ngaySinh: "1985-08-15", soDienThoai: "0912345678" },
+    { hoTen: "VIP 1", chucVu: "Lãnh đạo đơn vị", ngaySinh: "1985-08-15", soDienThoai: "0912345678" },
     { hoTen: "VIP 2", chucVu: "Kế toán trưởng", ngaySinh: "1990-05-25", soDienThoai: "0987654321" }
   ]
 };
@@ -72,6 +72,19 @@ test("validateCustomerInput rejects invalid VIP role", () => {
       }),
     /Chức vụ VIP không hợp lệ/
   );
+});
+
+test("validateCustomerInput rejects removed legacy leadership roles", () => {
+  for (const chucVu of ["Giám đốc", "Hiệu trưởng"]) {
+    assertBadRequest(
+      () =>
+        validateCustomerInput({
+          ...validPayload,
+          vips: [{ ...validPayload.vips[0], chucVu }, validPayload.vips[1]]
+        }),
+      /Chức vụ VIP không hợp lệ/
+    );
+  }
 });
 
 test("validateCustomerInput rejects invalid customer date", () => {

@@ -8,7 +8,7 @@ import { KhachHang, ChucVu } from "../types";
 import { formatDateVN, isDateInMonth, getCurrentMonth } from "../utils";
 import { 
   Search, Eye, Edit2, Trash2, Phone, Building, User, Filter, 
-  Sparkles, CheckCircle, GraduationCap, Percent, Award, Cake 
+  Sparkles, CheckCircle, Percent, Award, Cake 
 } from "lucide-react";
 
 interface CustomerListProps {
@@ -47,12 +47,18 @@ export default function CustomerList({
 
   const getVipRoleIcon = (role: ChucVu) => {
     switch (role) {
-      case ChucVu.GiamDoc:
-        return <Award className="w-3.5 h-3.5 text-amber-600" title={ChucVu.GiamDoc} />;
-      case ChucVu.HieuTruong:
-        return <GraduationCap className="w-3.5 h-3.5 text-indigo-600" title={ChucVu.HieuTruong} />;
+      case ChucVu.LanhDaoDonVi:
+        return (
+          <span title={ChucVu.LanhDaoDonVi}>
+            <Award className="w-3.5 h-3.5 text-amber-600" />
+          </span>
+        );
       case ChucVu.KeToanTruong:
-        return <Percent className="w-3.5 h-3.5 text-emerald-600" title={ChucVu.KeToanTruong} />;
+        return (
+          <span title={ChucVu.KeToanTruong}>
+            <Percent className="w-3.5 h-3.5 text-emerald-600" />
+          </span>
+        );
     }
   };
 
@@ -94,8 +100,7 @@ export default function CustomerList({
               id="filter-role-select"
             >
               <option value="All">Tất cả chức vụ</option>
-              <option value={ChucVu.GiamDoc}>Có Giám đốc</option>
-              <option value={ChucVu.HieuTruong}>Có Hiệu trưởng</option>
+              <option value={ChucVu.LanhDaoDonVi}>Có Lãnh đạo đơn vị</option>
               <option value={ChucVu.KeToanTruong}>Có Kế toán</option>
             </select>
           </div>
@@ -103,7 +108,7 @@ export default function CustomerList({
           {/* New Customer Button */}
           <button
             onClick={onAddNewClick}
-            className="w-full sm:w-auto bg-blue-600 text-white font-bold text-xs rounded-lg px-4 py-2.5 hover:bg-blue-700 transition-all flex items-center justify-center space-x-1 shadow-xs shrink-0 cursor-pointer"
+            className="w-full sm:w-auto bg-[#B01137] text-white font-bold text-xs rounded-lg px-4 py-2.5 hover:bg-blue-700 transition-all flex items-center justify-center space-x-1 shadow-xs shrink-0 cursor-pointer"
             id="btn-add-customer-trigger"
           >
             <span>+ Thêm khách hàng</span>
@@ -132,6 +137,7 @@ export default function CustomerList({
                   <th className="px-6 py-3.5">Thành lập</th>
                   <th className="px-6 py-3.5">Thông tin VIP 1</th>
                   <th className="px-6 py-3.5">Thông tin VIP 2</th>
+                  <th className="px-6 py-3.5">Cán bộ quản lý</th>
                   <th className="px-6 py-3.5 text-right">Thao tác</th>
                 </tr>
               </thead>
@@ -174,9 +180,6 @@ export default function CustomerList({
                           <div className="flex items-center space-x-2 mt-1">
                             <span className="text-[10px] text-slate-400">
                               Lịch sử: {kh.lichSuTuongTac.length} tương tác
-                            </span>
-                            <span className="text-[10px] text-slate-400">
-                              Cán bộ: {kh.canBoQuanLy}
                             </span>
                             {kh.ghiChuList.length > 0 && (
                               <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200 font-medium">
@@ -258,6 +261,14 @@ export default function CustomerList({
                         ) : (
                           <span className="text-slate-400 italic">Chưa nhập</span>
                         )}
+                      </td>
+
+                      {/* Management Officer */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700">
+                          <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <span>{kh.canBoQuanLy}</span>
+                        </div>
                       </td>
 
                       {/* Actions */}

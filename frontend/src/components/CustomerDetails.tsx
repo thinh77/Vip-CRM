@@ -56,10 +56,8 @@ export default function CustomerDetails({
 
   const getRoleColor = (role: ChucVu) => {
     switch (role) {
-      case ChucVu.GiamDoc:
+      case ChucVu.LanhDaoDonVi:
         return { bg: "bg-amber-50 text-amber-700 border-amber-200", prefix: "💼" };
-      case ChucVu.HieuTruong:
-        return { bg: "bg-indigo-50 text-indigo-700 border-indigo-100", prefix: "🎓" };
       case ChucVu.KeToanTruong:
         return { bg: "bg-emerald-50 text-emerald-700 border-emerald-100", prefix: "📊" };
     }
@@ -177,7 +175,7 @@ export default function CustomerDetails({
               />
               <button
                 type="submit"
-                className="bg-blue-600 text-white rounded-lg p-2 hover:bg-blue-700 transition-colors shrink-0 cursor-pointer"
+                className="bg-[#B01137] text-white rounded-lg p-2 hover:bg-blue-700 transition-colors shrink-0 cursor-pointer"
                 title="Lưu ghi chú"
                 id="btn-add-note"
               >
@@ -274,7 +272,7 @@ export default function CustomerDetails({
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="bg-blue-600 border border-transparent hover:bg-blue-700 text-white rounded-lg px-4 py-1.5 text-xs font-bold flex items-center space-x-1 shadow-xs transition-all cursor-pointer"
+                  className="bg-[#B01137] border border-transparent hover:bg-blue-700 text-white rounded-lg px-4 py-1.5 text-xs font-bold flex items-center space-x-1 shadow-xs transition-all cursor-pointer"
                   id="btn-submit-interaction"
                 >
                   <Plus className="w-3.5 h-3.5" />

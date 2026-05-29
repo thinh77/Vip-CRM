@@ -15,6 +15,9 @@ test("initial migration defines required tables and canBoQuanLy column", () => {
   assert.match(sql, /create table if not exists customers/i);
   assert.match(sql, /can_bo_quan_ly text not null/i);
   assert.match(sql, /create table if not exists vips/i);
+  assert.match(sql, /Lãnh đạo đơn vị/);
+  assert.doesNotMatch(sql, /Giám đốc/);
+  assert.doesNotMatch(sql, /Hiệu trưởng/);
   assert.match(sql, /create table if not exists interactions/i);
   assert.match(sql, /create table if not exists notes/i);
 });

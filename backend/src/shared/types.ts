@@ -1,4 +1,4 @@
-export const CHUC_VU_VALUES = ["Giám đốc", "Hiệu trưởng", "Kế toán trưởng"] as const;
+export const CHUC_VU_VALUES = ["Lãnh đạo đơn vị", "Kế toán trưởng"] as const;
 export type ChucVu = (typeof CHUC_VU_VALUES)[number];
 
 export const INTERACTION_TYPE_VALUES = ["Call", "Meeting", "Email", "Gift", "Other"] as const;

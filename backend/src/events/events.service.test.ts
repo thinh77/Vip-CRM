@@ -12,7 +12,7 @@ test("buildCareEvents returns founding and VIP birthday events sorted by day", (
                 ngayThanhLap: "2018-05-12",
                 canBoQuanLy: "Nguyễn Minh Anh",
                 vips: [
-                    { id: "vip-1", hoTen: "VIP 1", chucVu: "Giám đốc", ngaySinh: "1985-08-15", soDienThoai: "0912345678" },
+                    { id: "vip-1", hoTen: "VIP 1", chucVu: "Lãnh đạo đơn vị", ngaySinh: "1985-08-15", soDienThoai: "0912345678" },
                     { id: "vip-2", hoTen: "VIP 2", chucVu: "Kế toán trưởng", ngaySinh: "1990-05-25", soDienThoai: "0987654321" }
                 ],
                 lichSuTuongTac: [],

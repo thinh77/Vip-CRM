@@ -1,8 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React, { useState, useEffect } from "react";
 import { KhachHang, Interaction } from "./types";
 import { customersApi } from "./api/customersApi";
@@ -25,6 +20,7 @@ export default function App() {
   const [activeCustomerId, setActiveCustomerId] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [customerToEdit, setCustomerToEdit] = useState<KhachHang | undefined>(undefined);
+  const [pendingDeleteCustomer, setPendingDeleteCustomer] = useState<KhachHang | null>(null);
   const [events, setEvents] = useState<CareEvent[]>([]);
   const [stats, setStats] = useState<DashboardStats>({ totalCustomers: 0, monthEventsCount: 0, totalInteractions: 0 });
   const [searchTerm, setSearchTerm] = useState("");
@@ -98,15 +94,20 @@ export default function App() {
   const handleDeleteCustomer = async (id: string) => {
     const target = customers.find((kh) => kh.id === id);
     if (!target) return;
+    setPendingDeleteCustomer(target);
+  };
 
-    if (window.confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn khách hàng "${target.maKH} - ${target.tenKH}"? Hành động này không thể hoàn tác.`)) {
-      try {
-        await customersApi.remove(id);
-        await refreshAll();
-        showToast(`Đã xóa thành công bản ghi khách hàng ${target.maKH}.`, "info");
-      } catch (error) {
-        showToast(error instanceof Error ? error.message : "Không thể xóa khách hàng.", "error");
-      }
+  const confirmDeleteCustomer = async () => {
+    if (!pendingDeleteCustomer) return;
+    const target = pendingDeleteCustomer;
+    setPendingDeleteCustomer(null);
+
+    try {
+      await customersApi.remove(target.id);
+      await refreshAll();
+      showToast(`Đã xóa thành công bản ghi khách hàng ${target.maKH}.`, "info");
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Không thể xóa khách hàng.", "error");
     }
   };
 
@@ -196,22 +197,106 @@ export default function App() {
         </div>
       )}
 
+      {pendingDeleteCustomer && (
+        <div
+          className="fixed bottom-5 right-5 z-50 w-[min(92vw,420px)] rounded-xl border border-rose-200 bg-white p-4 shadow-xl"
+          id="delete-customer-confirm-toast"
+          role="alertdialog"
+          aria-modal="false"
+          aria-label="Xác nhận xóa khách hàng"
+        >
+          <div className="flex items-start gap-3">
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-rose-600" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold text-slate-900">Xóa khách hàng?</p>
+              <p className="mt-1 text-xs font-semibold leading-5 text-slate-600">
+                {pendingDeleteCustomer.maKH} - {pendingDeleteCustomer.tenKH}
+              </p>
+              <p className="mt-1 text-xs text-slate-500">Hành động này không thể hoàn tác.</p>
+              <div className="mt-3 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPendingDeleteCustomer(null)}
+                  className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50 cursor-pointer"
+                  id="btn-cancel-delete-customer"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmDeleteCustomer}
+                  className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-rose-700 cursor-pointer"
+                  id="btn-confirm-delete-customer"
+                >
+                  Xóa
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isFormOpen && !customerToEdit && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-950/45 px-4 py-6 sm:py-8 overflow-y-auto"
+          id="add-customer-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Thêm mới khách hàng"
+        >
+          <div className="min-h-full flex items-start justify-center">
+            <div className="w-full max-w-5xl" id="add-customer-modal-panel">
+              <CustomerForm
+                existingCodes={customers.map((c) => c.maKH)}
+                onCancel={() => {
+                  setIsFormOpen(false);
+                  setCustomerToEdit(undefined);
+                }}
+                onSubmit={handleFormSubmit}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isFormOpen && customerToEdit && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-950/45 px-4 py-6 sm:py-8 overflow-y-auto"
+          id="edit-customer-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Chỉnh sửa khách hàng"
+        >
+          <div className="min-h-full flex items-start justify-center">
+            <div className="w-full max-w-5xl" id="edit-customer-modal-panel">
+              <CustomerForm
+                initialData={customerToEdit}
+                existingCodes={customers.map((c) => c.maKH)}
+                onCancel={() => {
+                  setIsFormOpen(false);
+                  setCustomerToEdit(undefined);
+                }}
+                onSubmit={handleFormSubmit}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Header navigation */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-md bg-blue-600 flex items-center justify-center text-white font-extrabold text-base tracking-wider shadow-sm">
-              C
+            <div className="w-9 h-9 rounded-md bg-[#B01137] flex items-center justify-center text-white font-extrabold text-base tracking-wider shadow-sm">
+              A
             </div>
             <div>
               <h1 className="text-base sm:text-lg font-bold font-sans tracking-tight text-slate-900 flex items-center gap-2">
                 CRM Connect
-                <span className="text-[10px] uppercase tracking-widest bg-blue-50 text-blue-700 font-extrabold border border-blue-200/50 px-1.5 py-0.5 rounded-md hidden md:inline">
-                  PRO
-                </span>
+
               </h1>
               <p className="text-[10px] text-slate-500 font-semibold tracking-wide">
-                Hệ thống Quản lý đối tác và VIP chăm sóc
+                Hệ thống Quản lý chăm sóc khách hàng tổ chức
               </p>
             </div>
           </div>
@@ -262,30 +347,18 @@ export default function App() {
           />
         </section>
 
-        {/* 2. Interactive action row workspace - Handles Adding, Editing, Profiles */}
-        {(isFormOpen || activeCustomerId) && (
+        {/* 2. Interactive action row workspace - Handles selected customer profiles */}
+        {activeCustomerId && (
           <section className="animate-fadeIn" id="workspace-action-panel">
-            {isFormOpen ? (
-              <CustomerForm
-                initialData={customerToEdit}
-                existingCodes={customers.map((c) => c.maKH)}
-                onCancel={() => {
-                  setIsFormOpen(false);
-                  setCustomerToEdit(undefined);
-                }}
-                onSubmit={handleFormSubmit}
+            {activeCustomer && (
+              <CustomerDetails
+                customer={activeCustomer}
+                onClose={() => setActiveCustomerId(null)}
+                onAddInteraction={handleAddInteraction}
+                onDeleteInteraction={handleDeleteInteraction}
+                onAddNote={handleAddNote}
+                onDeleteNote={handleDeleteNote}
               />
-            ) : (
-              activeCustomer && (
-                <CustomerDetails
-                  customer={activeCustomer}
-                  onClose={() => setActiveCustomerId(null)}
-                  onAddInteraction={handleAddInteraction}
-                  onDeleteInteraction={handleDeleteInteraction}
-                  onAddNote={handleAddNote}
-                  onDeleteNote={handleDeleteNote}
-                />
-              )
             )}
           </section>
         )}
@@ -305,9 +378,6 @@ export default function App() {
               setCustomerToEdit(kh);
               setIsFormOpen(true);
               setActiveCustomerId(null); // maximize focus on edit form
-              setTimeout(() => {
-                document.getElementById("customer-form-panel")?.scrollIntoView({ behavior: "smooth" });
-              }, 50);
             }}
             onDeleteCustomer={handleDeleteCustomer}
             searchTerm={searchTerm}
@@ -318,9 +388,6 @@ export default function App() {
               setCustomerToEdit(undefined);
               setIsFormOpen(true);
               setActiveCustomerId(null); // maximize focus on add form
-              setTimeout(() => {
-                document.getElementById("customer-form-panel")?.scrollIntoView({ behavior: "smooth" });
-              }, 50);
             }}
           />
         </section>
