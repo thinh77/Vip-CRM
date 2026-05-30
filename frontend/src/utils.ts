@@ -55,7 +55,7 @@ export function getEventStatusText(daysRemaining: number, isToday: boolean, even
     return "Trong tháng";
   }
   if (isToday) {
-    return "HÔM NAY! 🎉";
+    return "HÔM NAY";
   }
   if (daysRemaining > 0) {
     return `Còn ${daysRemaining} ngày`;
