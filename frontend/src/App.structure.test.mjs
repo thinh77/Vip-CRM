@@ -40,6 +40,8 @@ test("App still wires customer list filters and actions to the extracted CRM con
   assert.match(source, /onSearchTermChange=\{crm\.setSearchTerm\}/);
   assert.match(source, /onManagerFilterChange=\{crm\.setManagerFilter\}/);
   assert.match(source, /onAddNewClick=\{crm\.openAddCustomerForm\}/);
+  assert.match(source, /onImportCustomers=\{crm\.importCustomersFromExcel\}/);
+  assert.match(source, /isImportingCustomers=\{crm\.isImportingCustomers\}/);
   assert.doesNotMatch(source, /roleFilter/);
   assert.doesNotMatch(source, /onRoleFilterChange/);
 });

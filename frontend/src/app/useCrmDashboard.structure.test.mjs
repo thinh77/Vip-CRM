@@ -42,3 +42,15 @@ test("CRM dashboard hook owns customer and log mutations", () => {
   assert.match(source, /customersApi\.deleteNote\(customerId, noteId\)/);
   assert.match(source, /showToast/);
 });
+
+test("CRM dashboard hook owns Excel customer import flow", () => {
+  assert.match(source, /import \{ parseCustomerImportFile \} from "\.\/customerImport"/);
+  assert.match(source, /const \[isImportingCustomers, setIsImportingCustomers\] = useState\(false\)/);
+  assert.match(source, /const importCustomersFromExcel = useCallback\(async \(file: File\) => \{/);
+  assert.match(source, /parseCustomerImportFile\(file\)/);
+  assert.match(source, /for \(const customer of importedCustomers\)/);
+  assert.match(source, /customersApi\.create\(customer\)/);
+  assert.match(source, /await refreshAll\(\)/);
+  assert.match(source, /importCustomersFromExcel,/);
+  assert.match(source, /isImportingCustomers,/);
+});

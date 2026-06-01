@@ -70,6 +70,8 @@ export default function App() {
             onSearchTermChange={crm.setSearchTerm}
             onManagerFilterChange={crm.setManagerFilter}
             onAddNewClick={crm.openAddCustomerForm}
+            onImportCustomers={crm.importCustomersFromExcel}
+            isImportingCustomers={crm.isImportingCustomers}
           />
         </section>
       </main>
