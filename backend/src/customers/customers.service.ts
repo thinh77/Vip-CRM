@@ -23,7 +23,7 @@ export type CustomerIdentity = {
 
 export type CustomerListFilters = {
   search?: string;
-  role?: string;
+  manager?: string;
 };
 
 export type CustomersRepositoryPort = {

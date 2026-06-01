@@ -17,9 +17,10 @@ interface CustomerListProps {
   onEditCustomer: (customer: KhachHang) => void;
   onDeleteCustomer: (id: string) => void;
   searchTerm: string;
-  roleFilter: string;
+  managerFilter: string;
+  managerOptions: string[];
   onSearchTermChange: (value: string) => void;
-  onRoleFilterChange: (value: string) => void;
+  onManagerFilterChange: (value: string) => void;
   onAddNewClick: () => void;
 }
 
@@ -29,9 +30,10 @@ export default function CustomerList({
   onEditCustomer,
   onDeleteCustomer,
   searchTerm,
-  roleFilter,
+  managerFilter,
+  managerOptions,
   onSearchTermChange,
-  onRoleFilterChange,
+  onManagerFilterChange,
   onAddNewClick
 }: CustomerListProps) {
   const currentMonth = getCurrentMonth();
@@ -71,7 +73,7 @@ export default function CustomerList({
             Danh Sách Khách Hàng Chăm Sóc ({finalCustomers.length})
           </h3>
           <p className="text-xs text-slate-500">
-            Tìm kiếm khách hàng theo Tên, Mã số, hoặc Tên VIP
+            Tìm kiếm khách hàng theo Tên, Mã số, Tên VIP hoặc cán bộ quản lý
           </p>
         </div>
 
@@ -94,14 +96,17 @@ export default function CustomerList({
           <div className="relative w-full sm:w-auto flex items-center bg-white border border-slate-200 rounded-lg px-2.5 py-2">
             <Filter className="w-3.5 h-3.5 text-slate-500 mr-1.5" />
             <select
-              value={roleFilter}
-              onChange={(e) => onRoleFilterChange(e.target.value)}
+              value={managerFilter}
+              onChange={(e) => onManagerFilterChange(e.target.value)}
               className="text-xs bg-transparent focus:outline-none focus:ring-0 font-medium text-slate-700 cursor-pointer pr-1"
-              id="filter-role-select"
+              id="filter-manager-select"
             >
-              <option value="All">Tất cả chức vụ</option>
-              <option value={ChucVu.LanhDaoDonVi}>Có Lãnh đạo đơn vị</option>
-              <option value={ChucVu.KeToanTruong}>Có Kế toán</option>
+              <option value="All">Tất cả cán bộ quản lý</option>
+              {managerOptions.map((manager) => (
+                <option key={manager} value={manager}>
+                  {manager}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -123,7 +128,7 @@ export default function CustomerList({
             <Search className="w-6 h-6" />
           </div>
           <p className="text-slate-500 font-medium">Không tìm thấy khách hàng nào khớp với bộ lọc.</p>
-          <p className="text-xs text-slate-400 mt-1">Vui lòng kiểm tra lại từ khóa tìm kiếm hoặc lọc tất cả chức vụ.</p>
+          <p className="text-xs text-slate-400 mt-1">Vui lòng kiểm tra lại từ khóa tìm kiếm hoặc lọc tất cả cán bộ quản lý.</p>
         </div>
       ) : (
         <>

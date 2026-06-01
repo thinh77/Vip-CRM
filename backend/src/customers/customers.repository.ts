@@ -196,16 +196,10 @@ export function createCustomersRepository(db: pg.Pool): CustomersRepositoryPort 
       `);
     }
 
-    if (filters.role && filters.role !== "All") {
-      values.push(filters.role);
-      conditions.push(`
-        exists (
-          select 1
-          from vips rv
-          where rv.customer_id = c.id
-            and rv.chuc_vu = $${values.length}
-        )
-      `);
+    const manager = filters.manager?.trim();
+    if (manager && manager !== "All") {
+      values.push(manager);
+      conditions.push(`c.can_bo_quan_ly = $${values.length}`);
     }
 
     const whereClause = conditions.length > 0 ? `where ${conditions.join(" and ")}` : "";

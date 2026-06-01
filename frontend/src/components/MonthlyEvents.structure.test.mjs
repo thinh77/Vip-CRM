@@ -28,3 +28,13 @@ test("today status text uses icon-free copy for a polished badge", () => {
   assert.match(utilsSource, /return "HÔM NAY";/);
   assert.doesNotMatch(utilsSource, /🎉/);
 });
+
+test("event cards start a customer note instead of quick interaction", () => {
+  assert.match(source, /onStartNote: \(customerId: string\) => void/);
+  assert.match(source, /onClick=\{\(\) => onStartNote\(event\.customerId\)\}/);
+  assert.match(source, /id=\{`start-note-btn-\$\{event\.id\}`\}/);
+  assert.match(source, /<span>Ghi chú<\/span>/);
+  assert.doesNotMatch(source, /onQuickInteract/);
+  assert.doesNotMatch(source, /Ghi nhanh/);
+  assert.doesNotMatch(source, /quick-interact-btn/);
+});

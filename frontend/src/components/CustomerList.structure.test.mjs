@@ -14,8 +14,15 @@ test("desktop customer table shows management officer as its own column", () => 
   assert.match(source, /<td className="[^"]*">\s*<div className="[^"]*">\s*<User[\s\S]*?\{kh\.canBoQuanLy\}/);
 });
 
-test("role filter uses the consolidated leadership role", () => {
-  assert.match(source, /Có Lãnh đạo đơn vị/);
-  assert.doesNotMatch(source, /Có Giám đốc/);
-  assert.doesNotMatch(source, /Có Hiệu trưởng/);
+test("manager filter uses customer management officers instead of VIP roles", () => {
+  assert.match(source, /managerOptions: string\[\]/);
+  assert.match(source, /id="filter-manager-select"/);
+  assert.match(source, /Tất cả cán bộ quản lý/);
+  assert.match(source, /managerOptions\.map/);
+  assert.match(source, /onManagerFilterChange/);
+  assert.doesNotMatch(source, /new Set\(customers\.map/);
+  assert.doesNotMatch(source, /id="filter-role-select"/);
+  assert.doesNotMatch(source, /roleFilter/);
+  assert.doesNotMatch(source, /Có Lãnh đạo đơn vị/);
+  assert.doesNotMatch(source, /Có Kế toán/);
 });

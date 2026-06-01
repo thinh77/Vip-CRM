@@ -10,10 +10,10 @@ export type CustomerPayload = {
 };
 
 export const customersApi = {
-  list: (params: { search?: string; role?: string } = {}) => {
+  list: (params: { search?: string; manager?: string } = {}) => {
     const query = new URLSearchParams();
     if (params.search) query.set("search", params.search);
-    if (params.role && params.role !== "All") query.set("role", params.role);
+    if (params.manager && params.manager !== "All") query.set("manager", params.manager);
     const suffix = query.toString() ? `?${query.toString()}` : "";
     return apiRequest<KhachHang[]>(`/customers${suffix}`);
   },

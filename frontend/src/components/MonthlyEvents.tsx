@@ -14,7 +14,7 @@ interface MonthlyEventsProps {
   currentMonth: number;
   onSelectedMonthChange: (month: number) => void;
   onSelectCustomer: (id: string) => void;
-  onQuickInteract: (customerId: string, prepopulatedType: "Call" | "Gift" | "Email", prepopulatedDetail: string) => void;
+  onStartNote: (customerId: string) => void;
 }
 
 export default function MonthlyEvents({
@@ -23,7 +23,7 @@ export default function MonthlyEvents({
   currentMonth,
   onSelectedMonthChange,
   onSelectCustomer,
-  onQuickInteract
+  onStartNote
 }: MonthlyEventsProps) {
   const handlePrevMonth = () => {
     onSelectedMonthChange(selectedMonth === 1 ? 12 : selectedMonth - 1);
@@ -146,14 +146,14 @@ export default function MonthlyEvents({
                 let statusBadgeClass = "bg-slate-100 text-slate-600 border-slate-200";
                 let dayBadgeClass = "text-[10px] text-slate-500 font-bold tracking-wider bg-white border border-slate-200 px-2 py-0.5 rounded-md";
                 let actionRowBorderClass = "border-slate-200";
-                let quickActionButtonClass = "flex items-center space-x-1 text-[11px] bg-[#B01137] hover:bg-blue-700 text-white font-bold px-2.5 py-1 rounded-md transition-all shadow-sm cursor-pointer";
+                let noteActionButtonClass = "flex items-center space-x-1 text-[11px] bg-[#B01137] hover:bg-blue-700 text-white font-bold px-2.5 py-1 rounded-md transition-all shadow-sm cursor-pointer";
 
                 if (isEventToday) {
                   cardBorderClass = "relative border-red-500 ring-4 ring-red-200/80 hover:border-red-600 bg-red-50 bg-gradient-to-br from-red-50 via-white to-amber-50 shadow-lg shadow-red-100/90 overflow-hidden";
                   statusBadgeClass = "bg-red-700 text-white border-red-700 font-extrabold shadow-sm ring-2 ring-red-100";
                   dayBadgeClass = "text-[10px] text-red-700 font-extrabold tracking-wider bg-white border border-red-300 px-2.5 py-1 rounded-md shadow-sm";
                   actionRowBorderClass = "border-red-100";
-                  quickActionButtonClass = "flex items-center space-x-1 text-[11px] bg-red-700 hover:bg-red-800 text-white font-extrabold px-2.5 py-1.5 rounded-md transition-all shadow-md shadow-red-100 ring-2 ring-red-100 cursor-pointer";
+                  noteActionButtonClass = "flex items-center space-x-1 text-[11px] bg-red-700 hover:bg-red-800 text-white font-extrabold px-2.5 py-1.5 rounded-md transition-all shadow-md shadow-red-100 ring-2 ring-red-100 cursor-pointer";
                 } else if (isEventUpcoming) {
                   cardBorderClass = "border-amber-200 hover:border-amber-300 bg-amber-50/10";
                   statusBadgeClass = "bg-amber-50 text-amber-800 border-amber-200 font-medium";
@@ -233,18 +233,13 @@ export default function MonthlyEvents({
 
                       <div className="flex items-center space-x-1.5">
                         <button
-                          onClick={() => {
-                            const logDetail = event.type === "FOUNDING"
-                              ? `Ghi nhận chúc mừng kỷ niệm ${event.age} năm ngày thành lập ${event.customerName}.`
-                              : `Ghi nhận liên hệ chúc mừng sinh nhật ${event.vipRole} ${event.vipName} tròn ${event.age} tuổi.`;
-                            onQuickInteract(event.customerId, event.type === "FOUNDING" ? "Gift" : "Call", logDetail);
-                          }}
-                          className={quickActionButtonClass}
-                          title="Ghi nhận tương tác chăm sóc khách hàng"
-                          id={`quick-interact-btn-${event.id}`}
+                          onClick={() => onStartNote(event.customerId)}
+                          className={noteActionButtonClass}
+                          title="Bắt đầu ghi chú khách hàng"
+                          id={`start-note-btn-${event.id}`}
                         >
                           <Plus className="w-3 h-3" />
-                          <span>Ghi nhanh</span>
+                          <span>Ghi chú</span>
                         </button>
                       </div>
                     </div>

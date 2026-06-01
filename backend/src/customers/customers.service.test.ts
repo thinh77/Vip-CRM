@@ -61,3 +61,17 @@ test("updateCustomer preserves existing interactions and notes through repositor
   assert.equal(result.lichSuTuongTac.length, 1);
   assert.equal(result.ghiChuList.length, 1);
 });
+
+test("listCustomers forwards management officer filter to repository", async () => {
+  let receivedFilters: unknown;
+  const service = createCustomersService(fakeRepository({
+    list: async (filters) => {
+      receivedFilters = filters;
+      return [];
+    }
+  }));
+
+  await service.listCustomers({ search: "KH201", manager: "Nguyễn Minh Anh" });
+
+  assert.deepEqual(receivedFilters, { search: "KH201", manager: "Nguyễn Minh Anh" });
+});

@@ -13,7 +13,7 @@ export const customersRouter = Router();
 customersRouter.get("/", asyncHandler(async (req, res) => {
   const customers = await service.listCustomers({
     search: typeof req.query.search === "string" ? req.query.search : undefined,
-    role: typeof req.query.role === "string" ? req.query.role : undefined
+    manager: typeof req.query.manager === "string" ? req.query.manager : undefined
   });
   res.json(customers);
 }));

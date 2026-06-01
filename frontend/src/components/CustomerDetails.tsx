@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { KhachHang, Interaction, GhiChu, ChucVu } from "../types";
 import { formatDateVN, getCurrentMonth } from "../utils";
 import { 
@@ -14,6 +14,8 @@ import {
 interface CustomerDetailsProps {
   customer: KhachHang;
   onClose: () => void;
+  shouldFocusNote?: boolean;
+  onNoteFocusHandled?: () => void;
   onAddInteraction: (customerId: string, interaction: Omit<Interaction, "id">) => void;
   onDeleteInteraction: (customerId: string, interactionId: string) => void;
   onAddNote: (customerId: string, content: string) => void;
@@ -23,6 +25,8 @@ interface CustomerDetailsProps {
 export default function CustomerDetails({
   customer,
   onClose,
+  shouldFocusNote = false,
+  onNoteFocusHandled,
   onAddInteraction,
   onDeleteInteraction,
   onAddNote,
@@ -35,6 +39,15 @@ export default function CustomerDetails({
   
   // Notes form state
   const [newNoteText, setNewNoteText] = useState("");
+  const noteInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!shouldFocusNote) return;
+
+    noteInputRef.current?.focus();
+    noteInputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    onNoteFocusHandled?.();
+  }, [shouldFocusNote, onNoteFocusHandled, customer.id]);
 
   const handleAddInteractionSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -166,6 +179,7 @@ export default function CustomerDetails({
             {/* Note Entry form */}
             <form onSubmit={handleAddNoteSubmit} className="flex gap-2">
               <input
+                ref={noteInputRef}
                 type="text"
                 placeholder="Nhập ghi chú mới..."
                 value={newNoteText}
