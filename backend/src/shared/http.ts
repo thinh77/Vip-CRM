@@ -13,6 +13,16 @@ export function errorMiddleware(
   res: Response,
   _next: NextFunction
 ): void {
+  if (
+    typeof error === "object"
+    && error !== null
+    && "status" in error
+    && error.status === 413
+  ) {
+    res.status(413).json({ message: "Dữ liệu gửi lên vượt quá giới hạn cho phép." });
+    return;
+  }
+
   if (error instanceof HttpError) {
     res.status(error.status).json({
       message: error.message,

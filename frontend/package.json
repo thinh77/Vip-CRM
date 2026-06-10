@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
-    "test": "node --test src/*.test.mjs src/**/*.test.mjs && tsx --test src/**/*.test.ts"
+    "test": "node --test src/*.test.mjs src/**/*.test.mjs && tsx --test src/**/*.test.ts",
+    "benchmark:import": "tsx src/app/customerImport.benchmark.ts"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",

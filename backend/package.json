@@ -8,6 +8,7 @@
     "start": "node dist/server.js",
     "build": "tsc -p tsconfig.json",
     "test": "node --import tsx --test \"src/**/*.test.ts\"",
+    "benchmark:import": "tsx src/benchmarks/customer-import.benchmark.ts",
     "migrate": "tsx src/db/migrate.ts",
     "seed": "tsx src/db/seed.ts",
     "lint": "tsc --noEmit"

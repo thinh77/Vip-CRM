@@ -28,11 +28,13 @@ test("manager filter uses customer management officers instead of VIP roles", ()
 });
 
 test("customer list exposes an Excel import control beside customer actions", () => {
-  assert.match(source, /onImportCustomers: \(file: File\) => void/);
-  assert.match(source, /isImportingCustomers: boolean/);
+  assert.match(source, /onImportCustomers: \(file: File\) => Promise<void>/);
+  assert.match(source, /customerImportState: CustomerImportState/);
   assert.match(source, /useRef<HTMLInputElement>\(null\)/);
   assert.match(source, /id="import-customers-excel-input"/);
   assert.match(source, /accept="\.xlsx,\.xls"/);
   assert.match(source, /id="btn-import-customers-excel"/);
   assert.match(source, /onImportCustomers\(file\)/);
+  assert.match(source, /getCustomerImportLabel\(customerImportState\)/);
+  assert.match(source, /customerImportState\.phase !== "idle"/);
 });

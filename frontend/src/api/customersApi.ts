@@ -19,6 +19,11 @@ export const customersApi = {
   },
   getById: (id: string) => apiRequest<KhachHang>(`/customers/${id}`),
   create: (payload: CustomerPayload) => apiRequest<KhachHang>("/customers", { method: "POST", body: JSON.stringify(payload) }),
+  importMany: (customers: CustomerPayload[]) =>
+    apiRequest<{ importedCount: number }>("/customers/import", {
+      method: "POST",
+      body: JSON.stringify({ customers })
+    }),
   update: (id: string, payload: CustomerPayload) => apiRequest<KhachHang>(`/customers/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
   remove: (id: string) => apiRequest<void>(`/customers/${id}`, { method: "DELETE" }),
   addInteraction: (customerId: string, interaction: Omit<Interaction, "id">) =>

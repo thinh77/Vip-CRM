@@ -71,7 +71,7 @@ export default function App() {
             onManagerFilterChange={crm.setManagerFilter}
             onAddNewClick={crm.openAddCustomerForm}
             onImportCustomers={crm.importCustomersFromExcel}
-            isImportingCustomers={crm.isImportingCustomers}
+            customerImportState={crm.customerImportState}
           />
         </section>
       </main>

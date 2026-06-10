@@ -1,6 +1,25 @@
 import type { CustomerPayload } from "../api/customersApi";
 import { ChucVu } from "../types";
 
+export type CustomerImportState =
+  | { phase: "idle"; count: 0 }
+  | { phase: "parsing"; count: 0 }
+  | { phase: "saving"; count: number }
+  | { phase: "refreshing"; count: number };
+
+export function getCustomerImportLabel(state: CustomerImportState): string {
+  switch (state.phase) {
+    case "parsing":
+      return "Đang đọc file...";
+    case "saving":
+      return `Đang lưu ${state.count} khách hàng...`;
+    case "refreshing":
+      return "Đang cập nhật dữ liệu...";
+    default:
+      return "Import Excel";
+  }
+}
+
 const REQUIRED_HEADERS = [
   "mã kh",
   "tên đơn vị",

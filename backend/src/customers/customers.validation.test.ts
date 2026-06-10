@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  validateCustomerImportInput,
   validateCustomerInput,
   validateInteractionInput,
   validateNoteInput
@@ -102,6 +103,45 @@ test("validateCustomerInput rejects invalid VIP date", () => {
         vips: [{ ...validPayload.vips[0], ngaySinh: "2026-02-29" }, validPayload.vips[1]]
       }),
     /Ngày không hợp lệ/
+  );
+});
+
+test("validateCustomerImportInput validates and normalizes every customer", () => {
+  const result = validateCustomerImportInput({
+    customers: [
+      validPayload,
+      { ...validPayload, maKH: " kh202 ", tenKH: " Công ty B " }
+    ]
+  });
+
+  assert.equal(result.length, 2);
+  assert.equal(result[0].maKH, "KH201");
+  assert.equal(result[1].maKH, "KH202");
+  assert.equal(result[1].tenKH, "Công ty B");
+});
+
+test("validateCustomerImportInput rejects empty and oversized batches", () => {
+  assertBadRequest(
+    () => validateCustomerImportInput({ customers: [] }),
+    /phải có ít nhất 1 khách hàng/
+  );
+  assertBadRequest(
+    () => validateCustomerImportInput({
+      customers: Array.from({ length: 5001 }, () => validPayload)
+    }),
+    /không được vượt quá 5000 khách hàng/
+  );
+});
+
+test("validateCustomerImportInput reports the Excel row for invalid customer data", () => {
+  assertBadRequest(
+    () => validateCustomerImportInput({
+      customers: [
+        validPayload,
+        { ...validPayload, maKH: "KH202", ngayThanhLap: "2026-02-31" }
+      ]
+    }),
+    /Dòng 3: Ngày không hợp lệ/
   );
 });
 

@@ -19,6 +19,7 @@ export type CustomerRecord = CustomerInput & {
 
 export type CustomerIdentity = {
   id: string;
+  maKH: string;
 };
 
 export type CustomerListFilters = {
@@ -28,9 +29,11 @@ export type CustomerListFilters = {
 
 export type CustomersRepositoryPort = {
   findByCode(maKH: string): Promise<CustomerIdentity | null>;
+  findByCodes(maKHs: string[]): Promise<CustomerIdentity[]>;
   findById(id: string): Promise<CustomerRecord | null>;
   list(filters?: CustomerListFilters): Promise<CustomerRecord[]>;
   create(input: CustomerInput): Promise<CustomerRecord>;
+  createMany(inputs: CustomerInput[]): Promise<number>;
   update(id: string, input: CustomerInput): Promise<CustomerRecord>;
   delete(id: string): Promise<boolean>;
   createInteraction(customerId: string, input: InteractionInput): Promise<InteractionRecord>;
@@ -62,6 +65,27 @@ export function createCustomersService(repository: CustomersRepositoryPort) {
         throw conflict(`Mã khách hàng ${input.maKH} đã tồn tại.`, "maKH");
       }
       return repository.create(input);
+    },
+
+    async importCustomers(inputs: CustomerInput[]): Promise<{ importedCount: number }> {
+      const seenCodes = new Set<string>();
+      for (const input of inputs) {
+        if (seenCodes.has(input.maKH)) {
+          throw conflict(`Mã khách hàng ${input.maKH} bị trùng trong file Excel.`, "maKH");
+        }
+        seenCodes.add(input.maKH);
+      }
+
+      const existing = await repository.findByCodes(inputs.map((input) => input.maKH));
+      if (existing.length > 0) {
+        const existingCodes = new Set(existing.map((customer) => customer.maKH));
+        const firstDuplicate = inputs.find((input) => existingCodes.has(input.maKH));
+        if (firstDuplicate) {
+          throw conflict(`Mã khách hàng ${firstDuplicate.maKH} đã tồn tại.`, "maKH");
+        }
+      }
+
+      return { importedCount: await repository.createMany(inputs) };
     },
 
     async updateCustomer(id: string, input: CustomerInput): Promise<CustomerRecord> {

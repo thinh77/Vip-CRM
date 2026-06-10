@@ -28,9 +28,11 @@ const baseRecord: CustomerRecord = {
 function fakeRepository(overrides: Partial<CustomersRepositoryPort> = {}): CustomersRepositoryPort {
   return {
     findByCode: async () => null,
+    findByCodes: async () => [],
     findById: async () => null,
     list: async () => [],
     create: async (input) => ({ id: "cust-1", ...input, lichSuTuongTac: [], ghiChuList: [] }),
+    createMany: async (inputs) => inputs.length,
     update: async (id, input) => ({ id, ...input, lichSuTuongTac: [], ghiChuList: [] }),
     delete: async () => true,
     createInteraction: async () => ({ id: "int-1", ngayThang: "2026-05-20", loaiHinh: "Call", chiTiet: "Call" }),
@@ -42,7 +44,9 @@ function fakeRepository(overrides: Partial<CustomersRepositoryPort> = {}): Custo
 }
 
 test("createCustomer rejects duplicate maKH", async () => {
-  const service = createCustomersService(fakeRepository({ findByCode: async () => ({ id: "existing" }) }));
+  const service = createCustomersService(fakeRepository({
+    findByCode: async () => ({ id: "existing", maKH: "KH201" })
+  }));
   await assert.rejects(() => service.createCustomer(baseInput), /đã tồn tại/);
 });
 
@@ -74,4 +78,55 @@ test("listCustomers forwards management officer filter to repository", async () 
   await service.listCustomers({ search: "KH201", manager: "Nguyễn Minh Anh" });
 
   assert.deepEqual(receivedFilters, { search: "KH201", manager: "Nguyễn Minh Anh" });
+});
+
+test("importCustomers rejects duplicate customer codes inside the batch", async () => {
+  const service = createCustomersService(fakeRepository());
+
+  await assert.rejects(
+    () => service.importCustomers([
+      baseInput,
+      { ...baseInput, maKH: "KH201", tenKH: "Công ty B" }
+    ]),
+    /Mã khách hàng KH201 bị trùng trong file Excel/
+  );
+});
+
+test("importCustomers rejects existing customer codes before writing", async () => {
+  let createManyCalled = false;
+  const service = createCustomersService(fakeRepository({
+    findByCodes: async () => [{ id: "existing", maKH: "KH202" }],
+    createMany: async () => {
+      createManyCalled = true;
+      return 0;
+    }
+  }));
+
+  await assert.rejects(
+    () => service.importCustomers([
+      baseInput,
+      { ...baseInput, maKH: "KH202", tenKH: "Công ty B" }
+    ]),
+    /Mã khách hàng KH202 đã tồn tại/
+  );
+  assert.equal(createManyCalled, false);
+});
+
+test("importCustomers writes the complete batch once", async () => {
+  let receivedInputs: CustomerInput[] = [];
+  const service = createCustomersService(fakeRepository({
+    createMany: async (inputs) => {
+      receivedInputs = inputs;
+      return inputs.length;
+    }
+  }));
+  const inputs = [
+    baseInput,
+    { ...baseInput, maKH: "KH202", tenKH: "Công ty B" }
+  ];
+
+  const result = await service.importCustomers(inputs);
+
+  assert.deepEqual(receivedInputs, inputs);
+  assert.deepEqual(result, { importedCount: 2 });
 });

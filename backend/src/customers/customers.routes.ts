@@ -3,7 +3,12 @@ import { pool } from "../db/pool.js";
 import { asyncHandler } from "../shared/http.js";
 import { createCustomersRepository } from "./customers.repository.js";
 import { createCustomersService } from "./customers.service.js";
-import { validateCustomerInput, validateInteractionInput, validateNoteInput } from "./customers.validation.js";
+import {
+  validateCustomerImportInput,
+  validateCustomerInput,
+  validateInteractionInput,
+  validateNoteInput
+} from "./customers.validation.js";
 
 const repository = createCustomersRepository(pool);
 const service = createCustomersService(repository);
@@ -20,6 +25,11 @@ customersRouter.get("/", asyncHandler(async (req, res) => {
 
 customersRouter.get("/:id", asyncHandler(async (req, res) => {
   res.json(await service.getCustomer(req.params.id));
+}));
+
+customersRouter.post("/import", asyncHandler(async (req, res) => {
+  const result = await service.importCustomers(validateCustomerImportInput(req.body));
+  res.status(201).json(result);
 }));
 
 customersRouter.post("/", asyncHandler(async (req, res) => {

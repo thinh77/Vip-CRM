@@ -1,13 +1,11 @@
 import { Router } from "express";
 import { pool } from "../db/pool.js";
-import { createCustomersRepository } from "../customers/customers.repository.js";
 import { asyncHandler } from "../shared/http.js";
-import { buildStats } from "./stats.service.js";
+import { createStatsRepository } from "./stats.repository.js";
 
-const repository = createCustomersRepository(pool);
+const repository = createStatsRepository(pool);
 export const statsRouter = Router();
 
 statsRouter.get("/", asyncHandler(async (_req, res) => {
-    const customers = await repository.list({});
-    res.json(buildStats(customers));
+    res.json(await repository.getDashboardStats(new Date().getMonth() + 1));
 }));

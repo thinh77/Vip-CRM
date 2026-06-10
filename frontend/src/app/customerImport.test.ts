@@ -2,7 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import * as XLSX from "xlsx";
 import { ChucVu } from "../types";
-import { mapCustomerImportSheet, normalizeImportHeaders, parseCustomerImportFile } from "./customerImport";
+import {
+  getCustomerImportLabel,
+  mapCustomerImportSheet,
+  normalizeImportHeaders,
+  parseCustomerImportFile
+} from "./customerImport";
 
 const headers = [
   " MÃ KH ",
@@ -90,4 +95,11 @@ test("parses the first worksheet from a real Excel file", async () => {
   assert.equal(customers[0].vips[0].ngaySinh, "1982-05-15");
   assert.equal(customers[0].vips[1].ngaySinh, "1984-06-20");
   assert.equal(customers[0].ngayThanhLap, "2005-12-25");
+});
+
+test("formats each customer import phase for the action button", () => {
+  assert.equal(getCustomerImportLabel({ phase: "idle", count: 0 }), "Import Excel");
+  assert.equal(getCustomerImportLabel({ phase: "parsing", count: 0 }), "Đang đọc file...");
+  assert.equal(getCustomerImportLabel({ phase: "saving", count: 2500 }), "Đang lưu 2500 khách hàng...");
+  assert.equal(getCustomerImportLabel({ phase: "refreshing", count: 2500 }), "Đang cập nhật dữ liệu...");
 });

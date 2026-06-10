@@ -8,6 +8,7 @@ import { statsRouter } from "./stats/stats.routes.js";
 export const app = express();
 
 app.use(cors({ origin: process.env.CORS_ORIGIN || true }));
+app.use("/api/customers/import", express.json({ limit: "10mb" }));
 app.use(express.json({ limit: "1mb" }));
 
 app.get("/api/health", (_req, res) => {

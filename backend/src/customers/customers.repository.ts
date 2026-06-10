@@ -7,6 +7,7 @@ import type {
   InteractionRecord,
   NoteRecord
 } from "./customers.service.js";
+import { conflict } from "../shared/errors.js";
 import type { ChucVu, CustomerInput, InteractionInput, InteractionType } from "../shared/types.js";
 
 type Queryable = {
@@ -25,6 +26,7 @@ type CustomerRow = {
 };
 
 type VipRow = {
+  customer_id?: string;
   id: string;
   ho_ten: string;
   chuc_vu: ChucVu;
@@ -33,6 +35,7 @@ type VipRow = {
 };
 
 type InteractionRow = {
+  customer_id?: string;
   id: string;
   ngay_thang: string | Date;
   loai_hinh: InteractionType;
@@ -40,6 +43,7 @@ type InteractionRow = {
 };
 
 type NoteRow = {
+  customer_id?: string;
   id: string;
   ngay_tao: string | Date;
   noi_dung: string;
@@ -168,10 +172,19 @@ export function createCustomersRepository(db: pg.Pool): CustomersRepositoryPort 
 
   async function findByCode(maKH: string): Promise<CustomerIdentity | null> {
     const result = await db.query<CustomerIdentity>(
-      "select id from customers where ma_kh = $1",
+      'select id, ma_kh as "maKH" from customers where ma_kh = $1',
       [maKH]
     );
     return result.rows[0] ?? null;
+  }
+
+  async function findByCodes(maKHs: string[]): Promise<CustomerIdentity[]> {
+    if (maKHs.length === 0) return [];
+    const result = await db.query<CustomerIdentity>(
+      'select id, ma_kh as "maKH" from customers where ma_kh = any($1::text[])',
+      [maKHs]
+    );
+    return result.rows;
   }
 
   async function list(filters: CustomerListFilters = {}): Promise<CustomerRecord[]> {
@@ -203,18 +216,79 @@ export function createCustomersRepository(db: pg.Pool): CustomersRepositoryPort 
     }
 
     const whereClause = conditions.length > 0 ? `where ${conditions.join(" and ")}` : "";
-    const result = await db.query<{ id: string }>(
+    const result = await db.query<CustomerRow>(
       `
-        select c.id
+        select c.id, c.ma_kh, c.ten_kh, c.ngay_thanh_lap, c.can_bo_quan_ly
         from customers c
         ${whereClause}
         order by c.ma_kh asc
       `,
       values
     );
+    if (result.rows.length === 0) return [];
 
-    const customers = await Promise.all(result.rows.map((row) => findById(db, row.id)));
-    return customers.filter((customer): customer is CustomerRecord => customer !== null);
+    const customerIds = result.rows.map((row) => row.id);
+    const [vipResult, interactionResult, noteResult] = await Promise.all([
+      db.query<VipRow>(
+        `
+          select customer_id, id, ho_ten, chuc_vu, ngay_sinh, so_dien_thoai
+          from vips
+          where customer_id = any($1::uuid[])
+          order by customer_id, position asc
+        `,
+        [customerIds]
+      ),
+      db.query<InteractionRow>(
+        `
+          select customer_id, id, ngay_thang, loai_hinh, chi_tiet
+          from interactions
+          where customer_id = any($1::uuid[])
+          order by customer_id, ngay_thang desc, created_at desc
+        `,
+        [customerIds]
+      ),
+      db.query<NoteRow>(
+        `
+          select customer_id, id, ngay_tao, noi_dung
+          from notes
+          where customer_id = any($1::uuid[])
+          order by customer_id, ngay_tao desc, created_at desc
+        `,
+        [customerIds]
+      )
+    ]);
+
+    const groupByCustomer = <T extends { customer_id?: string }>(rows: T[]) => {
+      const grouped = new Map<string, T[]>();
+      for (const row of rows) {
+        if (!row.customer_id) continue;
+        const current = grouped.get(row.customer_id) ?? [];
+        current.push(row);
+        grouped.set(row.customer_id, current);
+      }
+      return grouped;
+    };
+
+    const vipsByCustomer = groupByCustomer(vipResult.rows);
+    const interactionsByCustomer = groupByCustomer(interactionResult.rows);
+    const notesByCustomer = groupByCustomer(noteResult.rows);
+
+    return result.rows.map((customer) => {
+      const vips = (vipsByCustomer.get(customer.id) ?? []).map(mapVip);
+      if (vips.length !== 2) {
+        throw new Error(`Customer ${customer.id} has ${vips.length} VIP records; expected 2.`);
+      }
+      return {
+        id: customer.id,
+        maKH: customer.ma_kh,
+        tenKH: customer.ten_kh,
+        ngayThanhLap: toIsoDate(customer.ngay_thanh_lap),
+        canBoQuanLy: customer.can_bo_quan_ly,
+        vips: [vips[0], vips[1]],
+        lichSuTuongTac: (interactionsByCustomer.get(customer.id) ?? []).map(mapInteraction),
+        ghiChuList: (notesByCustomer.get(customer.id) ?? []).map(mapNote)
+      };
+    });
   }
 
   async function create(input: CustomerInput): Promise<CustomerRecord> {
@@ -241,6 +315,72 @@ export function createCustomersRepository(db: pg.Pool): CustomersRepositoryPort 
 
       return requireCustomer(client, customerId);
     });
+  }
+
+  async function createMany(inputs: CustomerInput[]): Promise<number> {
+    const payload = inputs.map((input) => ({
+      ma_kh: input.maKH,
+      ten_kh: input.tenKH,
+      ngay_thanh_lap: input.ngayThanhLap,
+      can_bo_quan_ly: input.canBoQuanLy,
+      vips: input.vips
+    }));
+
+    try {
+      return await withTransaction(async (client) => {
+        const result = await client.query<{ imported_count: number }>(
+          `
+            with input_customers as (
+              select *
+              from jsonb_to_recordset($1::jsonb) as input(
+                ma_kh text,
+                ten_kh text,
+                ngay_thanh_lap date,
+                can_bo_quan_ly text,
+                vips jsonb
+              )
+            ),
+            inserted_customers as (
+              insert into customers (ma_kh, ten_kh, ngay_thanh_lap, can_bo_quan_ly, updated_at)
+              select ma_kh, ten_kh, ngay_thanh_lap, can_bo_quan_ly, now()
+              from input_customers
+              returning id, ma_kh
+            ),
+            inserted_vips as (
+              insert into vips (
+                customer_id,
+                position,
+                ho_ten,
+                chuc_vu,
+                ngay_sinh,
+                so_dien_thoai
+              )
+              select
+                inserted_customers.id,
+                vip.ordinality::smallint,
+                vip.value->>'hoTen',
+                vip.value->>'chucVu',
+                (vip.value->>'ngaySinh')::date,
+                vip.value->>'soDienThoai'
+              from input_customers
+              join inserted_customers using (ma_kh)
+              cross join lateral jsonb_array_elements(input_customers.vips)
+                with ordinality as vip(value, ordinality)
+              returning customer_id
+            )
+            select count(*)::int as imported_count
+            from inserted_customers
+          `,
+          [JSON.stringify(payload)]
+        );
+        return result.rows[0]?.imported_count ?? 0;
+      });
+    } catch (error) {
+      if ((error as { code?: string }).code === "23505") {
+        throw conflict("Một hoặc nhiều mã khách hàng đã tồn tại.", "maKH");
+      }
+      throw error;
+    }
   }
 
   async function update(id: string, input: CustomerInput): Promise<CustomerRecord> {
@@ -325,9 +465,11 @@ export function createCustomersRepository(db: pg.Pool): CustomersRepositoryPort 
 
   return {
     findByCode,
+    findByCodes,
     findById: (id) => findById(db, id),
     list,
     create,
+    createMany,
     update,
     delete: deleteCustomer,
     createInteraction,

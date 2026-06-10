@@ -10,3 +10,9 @@ test("customer list API sends manager filter instead of role filter", () => {
   assert.doesNotMatch(source, /role\?: string/);
   assert.doesNotMatch(source, /query\.set\("role"/);
 });
+
+test("customer import API sends the entire batch in one request", () => {
+  assert.match(source, /importMany: \(customers: CustomerPayload\[\]\)/);
+  assert.match(source, /apiRequest<\{ importedCount: number \}>\("\/customers\/import"/);
+  assert.match(source, /body: JSON\.stringify\(\{ customers \}\)/);
+});

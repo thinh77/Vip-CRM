@@ -36,3 +36,27 @@ test("GET /api/customers responds with JSON", async () => {
   assert.notEqual(response.status, 404);
   assert.match(response.headers.get("content-type") || "", /application\/json/);
 });
+
+test("POST /api/customers/import accepts payloads larger than the default 1mb limit", async () => {
+  const response = await fetch(`${baseUrl}/api/customers/import`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ customers: [], padding: "x".repeat(1024 * 1024) })
+  });
+
+  assert.equal(response.status, 400);
+  assert.match((await response.json()).message, /ít nhất 1 khách hàng/);
+});
+
+test("POST /api/customers/import returns JSON 413 above the 10mb limit", async () => {
+  const response = await fetch(`${baseUrl}/api/customers/import`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ customers: [], padding: "x".repeat(10 * 1024 * 1024) })
+  });
+
+  assert.equal(response.status, 413);
+  assert.deepEqual(await response.json(), {
+    message: "Dữ liệu gửi lên vượt quá giới hạn cho phép."
+  });
+});

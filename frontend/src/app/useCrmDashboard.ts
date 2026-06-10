@@ -7,6 +7,7 @@ import type { CareEvent, DashboardStats, Interaction, KhachHang } from "../types
 import { getCurrentMonth } from "../utils";
 import { filterCustomers, getManagerOptions } from "./customerFilters";
 import { parseCustomerImportFile } from "./customerImport";
+import type { CustomerImportState } from "./customerImport";
 
 export type ToastMessage = {
   message: string;
@@ -34,7 +35,10 @@ export function useCrmDashboard() {
   const [noteFocusCustomerId, setNoteFocusCustomerId] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [isLoading, setIsLoading] = useState(true);
-  const [isImportingCustomers, setIsImportingCustomers] = useState(false);
+  const [customerImportState, setCustomerImportState] = useState<CustomerImportState>({
+    phase: "idle",
+    count: 0
+  });
   const [loadError, setLoadError] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -146,7 +150,7 @@ export function useCrmDashboard() {
   }, [closeCustomerForm, customerToEdit, refreshAll, showToast]);
 
   const importCustomersFromExcel = useCallback(async (file: File) => {
-    setIsImportingCustomers(true);
+    setCustomerImportState({ phase: "parsing", count: 0 });
 
     try {
       const importedCustomers = await parseCustomerImportFile(file);
@@ -155,36 +159,17 @@ export function useCrmDashboard() {
         return;
       }
 
-      const seenCodes = new Set<string>();
-      const duplicateInFile = importedCustomers.find((customer) => {
-        if (seenCodes.has(customer.maKH)) return true;
-        seenCodes.add(customer.maKH);
-        return false;
-      });
-      if (duplicateInFile) {
-        showToast(`Mã khách hàng ${duplicateInFile.maKH} bị trùng trong file Excel.`, "error");
-        return;
-      }
-
-      const existingCodes = new Set(allCustomers.map((customer) => customer.maKH.toUpperCase()));
-      const existingCustomer = importedCustomers.find((customer) => existingCodes.has(customer.maKH));
-      if (existingCustomer) {
-        showToast(`Mã khách hàng ${existingCustomer.maKH} đã tồn tại trên hệ thống.`, "error");
-        return;
-      }
-
-      for (const customer of importedCustomers) {
-        await customersApi.create(customer);
-      }
-
+      setCustomerImportState({ phase: "saving", count: importedCustomers.length });
+      const result = await customersApi.importMany(importedCustomers);
+      setCustomerImportState({ phase: "refreshing", count: result.importedCount });
       await refreshAll();
-      showToast(`Đã import ${importedCustomers.length} khách hàng từ Excel.`);
+      showToast(`Đã import ${result.importedCount} khách hàng từ Excel.`);
     } catch (error) {
       showToast(error instanceof Error ? error.message : "Không thể import khách hàng từ Excel.", "error");
     } finally {
-      setIsImportingCustomers(false);
+      setCustomerImportState({ phase: "idle", count: 0 });
     }
-  }, [allCustomers, refreshAll, showToast]);
+  }, [refreshAll, showToast]);
 
   const requestDeleteCustomer = useCallback((id: string) => {
     const target = allCustomers.find((customer) => customer.id === id);
@@ -287,12 +272,12 @@ export function useCrmDashboard() {
     deleteNote,
     events,
     isFormOpen,
-    isImportingCustomers,
     isLoading,
     loadError,
     managerFilter,
     managerOptions,
     noteFocusCustomerId,
+    customerImportState,
     importCustomersFromExcel,
     openAddCustomerForm,
     openCustomerDetails,

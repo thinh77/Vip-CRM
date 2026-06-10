@@ -1,5 +1,5 @@
 import { assertIsoDate } from "../shared/date.js";
-import { badRequest } from "../shared/errors.js";
+import { badRequest, HttpError } from "../shared/errors.js";
 import {
   CHUC_VU_VALUES,
   INTERACTION_TYPE_VALUES,
@@ -51,6 +51,30 @@ export function validateCustomerInput(value: unknown): CustomerInput {
   }) as CustomerInput["vips"];
 
   return { maKH, tenKH, ngayThanhLap, canBoQuanLy, vips };
+}
+
+export function validateCustomerImportInput(value: unknown): CustomerInput[] {
+  const input = requireObject(value, "import", "Dữ liệu import");
+  if (!Array.isArray(input.customers)) {
+    throw badRequest("Danh sách khách hàng không hợp lệ.", "customers");
+  }
+  if (input.customers.length === 0) {
+    throw badRequest("File import phải có ít nhất 1 khách hàng.", "customers");
+  }
+  if (input.customers.length > 5000) {
+    throw badRequest("Mỗi lần import không được vượt quá 5000 khách hàng.", "customers");
+  }
+
+  return input.customers.map((customer, index) => {
+    try {
+      return validateCustomerInput(customer);
+    } catch (error) {
+      if (error instanceof HttpError) {
+        throw badRequest(`Dòng ${index + 2}: ${error.message}`, error.field);
+      }
+      throw error;
+    }
+  });
 }
 
 export function validateInteractionInput(value: unknown): InteractionInput {
