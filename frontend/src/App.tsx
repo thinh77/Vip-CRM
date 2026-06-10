@@ -7,10 +7,13 @@ import { useAppNavigation } from "./app/useAppNavigation";
 import { useCrmDashboard } from "./app/useCrmDashboard";
 import CustomerList from "./components/CustomerList";
 import MonthlyEvents from "./components/MonthlyEvents";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 export default function App() {
   const crm = useCrmDashboard();
   const navigation = useAppNavigation();
+  const shouldReduceMotion = useReducedMotion();
+  const pageOffset = shouldReduceMotion ? 0 : 8;
 
   return (
     <div className="min-h-screen bg-slate-50/70 font-sans text-slate-900 antialiased" id="main-applet-root">
@@ -59,43 +62,66 @@ export default function App() {
             </div>
           )}
 
-          {navigation.activeView === "events" && (
-            <section id="banner-events-this-month">
-              <MonthlyEvents
-                events={crm.events}
-                selectedMonth={crm.selectedMonth}
-                currentMonth={crm.currentMonth}
-                onSelectedMonthChange={crm.setSelectedMonth}
-                onSelectCustomer={crm.openCustomerDetails}
-                onStartNote={crm.startCustomerNote}
-              />
-            </section>
-          )}
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={navigation.activeView}
+              initial={{ opacity: 0, y: pageOffset }}
+              animate={{
+                opacity: 1,
+                y: 0,
+                transition: {
+                  duration: shouldReduceMotion ? 0.08 : 0.2,
+                  ease: [0.22, 1, 0.36, 1]
+                }
+              }}
+              exit={{
+                opacity: 0,
+                y: 0,
+                transition: {
+                  duration: shouldReduceMotion ? 0.08 : 0.1,
+                  ease: "easeOut"
+                }
+              }}
+            >
+              {navigation.activeView === "events" && (
+                <section id="banner-events-this-month">
+                  <MonthlyEvents
+                    events={crm.events}
+                    selectedMonth={crm.selectedMonth}
+                    currentMonth={crm.currentMonth}
+                    onSelectedMonthChange={crm.setSelectedMonth}
+                    onSelectCustomer={crm.openCustomerDetails}
+                    onStartNote={crm.startCustomerNote}
+                  />
+                </section>
+              )}
 
-          {navigation.activeView === "customers" && (
-            <section id="main-list-crm-panel">
-              <CustomerList
-                customers={crm.customers}
-                onSelectCustomer={crm.openCustomerDetails}
-                onEditCustomer={crm.openEditCustomerForm}
-                onDeleteCustomer={crm.requestDeleteCustomer}
-                searchTerm={crm.searchTerm}
-                managerFilter={crm.managerFilter}
-                managerOptions={crm.managerOptions}
-                onSearchTermChange={crm.setSearchTerm}
-                onManagerFilterChange={crm.setManagerFilter}
-                onAddNewClick={crm.openAddCustomerForm}
-              />
-            </section>
-          )}
+              {navigation.activeView === "customers" && (
+                <section id="main-list-crm-panel">
+                  <CustomerList
+                    customers={crm.customers}
+                    onSelectCustomer={crm.openCustomerDetails}
+                    onEditCustomer={crm.openEditCustomerForm}
+                    onDeleteCustomer={crm.requestDeleteCustomer}
+                    searchTerm={crm.searchTerm}
+                    managerFilter={crm.managerFilter}
+                    managerOptions={crm.managerOptions}
+                    onSearchTermChange={crm.setSearchTerm}
+                    onManagerFilterChange={crm.setManagerFilter}
+                    onAddNewClick={crm.openAddCustomerForm}
+                  />
+                </section>
+              )}
 
-          {navigation.activeView === "import" && (
-            <CustomerImportPage
-              customerImportState={crm.customerImportState}
-              onImportCustomers={crm.importCustomersFromExcel}
-              onViewCustomers={() => navigation.selectView("customers")}
-            />
-          )}
+              {navigation.activeView === "import" && (
+                <CustomerImportPage
+                  customerImportState={crm.customerImportState}
+                  onImportCustomers={crm.importCustomersFromExcel}
+                  onViewCustomers={() => navigation.selectView("customers")}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
         </main>
       </div>
     </div>

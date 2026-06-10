@@ -21,3 +21,16 @@ test("mobile drawer can open, close, and close on Escape", () => {
   assert.match(source, /window\.addEventListener\("keydown", handleKeyDown\)/);
   assert.match(source, /window\.removeEventListener\("keydown", handleKeyDown\)/);
 });
+
+test("view selection closes the drawer, ignores the active view, and scrolls to the top", () => {
+  assert.match(source, /import \{ useReducedMotion \} from "motion\/react"/);
+  assert.match(source, /const shouldReduceMotion = useReducedMotion\(\)/);
+  assert.match(source, /setIsDrawerOpen\(false\)/);
+  assert.match(source, /if \(view === activeView\) return/);
+  assert.match(source, /setActiveView\(view\)/);
+  assert.match(source, /requestAnimationFrame\(\(\) => \{/);
+  assert.match(source, /window\.scrollTo\(\{/);
+  assert.match(source, /top: 0/);
+  assert.match(source, /behavior: shouldReduceMotion === true \? "auto" : "smooth"/);
+  assert.match(source, /\}, \[activeView, shouldReduceMotion\]\)/);
+});

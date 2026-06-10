@@ -72,3 +72,17 @@ test("App keeps loading and error display at the shell level", () => {
   assert.match(source, /\{crm\.isLoading && \(/);
   assert.match(source, /Đang tải dữ liệu CRM/);
 });
+
+test("App animates only the keyed active page with the approved transition", () => {
+  assert.match(source, /import \{ AnimatePresence, motion, useReducedMotion \} from "motion\/react"/);
+  assert.match(source, /const shouldReduceMotion = useReducedMotion\(\)/);
+  assert.match(source, /const pageOffset = shouldReduceMotion \? 0 : 8/);
+  assert.match(source, /<AnimatePresence mode="wait" initial=\{false\}>/);
+  assert.match(source, /<motion\.div\s+key=\{navigation\.activeView\}/);
+  assert.match(source, /initial=\{\{ opacity: 0, y: pageOffset \}\}/);
+  assert.match(source, /animate=\{\{\s*opacity: 1,\s*y: 0,/s);
+  assert.match(source, /duration: shouldReduceMotion \? 0\.08 : 0\.2/);
+  assert.match(source, /ease: \[0\.22, 1, 0\.36, 1\]/);
+  assert.match(source, /exit=\{\{\s*opacity: 0,\s*y: 0,/s);
+  assert.match(source, /duration: shouldReduceMotion \? 0\.08 : 0\.1/);
+});
