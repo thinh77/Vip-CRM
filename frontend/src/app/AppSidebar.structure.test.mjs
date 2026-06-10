@@ -29,13 +29,21 @@ test("sidebar moves one shared active indicator between destinations", () => {
   assert.match(source, /import \{ AnimatePresence, LayoutGroup, motion, useReducedMotion \} from "motion\/react"/);
   assert.match(source, /layoutGroupId: string/);
   assert.match(source, /<LayoutGroup id=\{layoutGroupId\}>/);
-  assert.match(source, /layoutId="sidebar-active-indicator"/);
+  assert.match(source, /"sidebar-active-indicator"/);
   assert.match(source, /type: "spring"/);
   assert.match(source, /stiffness: 420/);
   assert.match(source, /damping: 34/);
   assert.match(source, /aria-current=\{isActive \? "page" : undefined\}/);
   assert.match(source, /layoutGroupId="desktop-sidebar"/);
   assert.match(source, /layoutGroupId="mobile-sidebar"/);
+});
+
+test("reduced motion disables positional movement of the active indicator", () => {
+  assert.match(
+    source,
+    /layoutId=\{shouldReduceMotion \? undefined : "sidebar-active-indicator"\}/
+  );
+  assert.doesNotMatch(source, /shouldReduceMotion\s*\?\s*\{ duration: 0\.08 \}/);
 });
 
 test("mobile drawer and overlay animate through mount and unmount", () => {

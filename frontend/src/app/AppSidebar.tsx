@@ -73,13 +73,9 @@ function SidebarContent({ activeView, layoutGroupId, onSelectView, onClose }: Si
               >
                 {isActive && (
                   <motion.span
-                    layoutId="sidebar-active-indicator"
+                    layoutId={shouldReduceMotion ? undefined : "sidebar-active-indicator"}
                     className="absolute inset-0 z-0 rounded-xl bg-[#B01137] shadow-md shadow-rose-900/15"
-                    transition={
-                      shouldReduceMotion
-                        ? { duration: 0.08 }
-                        : { type: "spring", stiffness: 420, damping: 34 }
-                    }
+                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
                   />
                 )}
                 <span
