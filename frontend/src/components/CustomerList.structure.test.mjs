@@ -27,14 +27,11 @@ test("manager filter uses customer management officers instead of VIP roles", ()
   assert.doesNotMatch(source, /Có Kế toán/);
 });
 
-test("customer list exposes an Excel import control beside customer actions", () => {
-  assert.match(source, /onImportCustomers: \(file: File\) => Promise<void>/);
-  assert.match(source, /customerImportState: CustomerImportState/);
-  assert.match(source, /useRef<HTMLInputElement>\(null\)/);
-  assert.match(source, /id="import-customers-excel-input"/);
-  assert.match(source, /accept="\.xlsx,\.xls"/);
-  assert.match(source, /id="btn-import-customers-excel"/);
-  assert.match(source, /onImportCustomers\(file\)/);
-  assert.match(source, /getCustomerImportLabel\(customerImportState\)/);
-  assert.match(source, /customerImportState\.phase !== "idle"/);
+test("customer list leaves Excel import to the dedicated import page", () => {
+  assert.doesNotMatch(source, /onImportCustomers/);
+  assert.doesNotMatch(source, /customerImportState/);
+  assert.doesNotMatch(source, /import-customers-excel-input/);
+  assert.doesNotMatch(source, /btn-import-customers-excel/);
+  assert.doesNotMatch(source, /getCustomerImportLabel/);
+  assert.doesNotMatch(source, /<Upload/);
 });

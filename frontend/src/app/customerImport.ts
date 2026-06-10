@@ -20,6 +20,10 @@ export function getCustomerImportLabel(state: CustomerImportState): string {
   }
 }
 
+export function isSupportedCustomerImportFile(file: File): boolean {
+  return /\.(xlsx|xls)$/i.test(file.name);
+}
+
 const REQUIRED_HEADERS = [
   "mã kh",
   "tên đơn vị",

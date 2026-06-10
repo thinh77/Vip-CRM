@@ -3,14 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useRef } from "react";
 import { KhachHang, ChucVu } from "../types";
 import { formatDateVN, isDateInMonth, getCurrentMonth } from "../utils";
-import { getCustomerImportLabel } from "../app/customerImport";
-import type { CustomerImportState } from "../app/customerImport";
 import { 
   Search, Eye, Edit2, Trash2, Phone, Building, User, Filter, 
-  Sparkles, CheckCircle, Percent, Award, Cake, Upload
+  Sparkles, CheckCircle, Percent, Award, Cake
 } from "lucide-react";
 
 interface CustomerListProps {
@@ -24,8 +21,6 @@ interface CustomerListProps {
   onSearchTermChange: (value: string) => void;
   onManagerFilterChange: (value: string) => void;
   onAddNewClick: () => void;
-  onImportCustomers: (file: File) => Promise<void>;
-  customerImportState: CustomerImportState;
 }
 
 export default function CustomerList({
@@ -38,21 +33,10 @@ export default function CustomerList({
   managerOptions,
   onSearchTermChange,
   onManagerFilterChange,
-  onAddNewClick,
-  onImportCustomers,
-  customerImportState
+  onAddNewClick
 }: CustomerListProps) {
   const currentMonth = getCurrentMonth();
   const finalCustomers = customers;
-  const importInputRef = useRef<HTMLInputElement>(null);
-
-  const handleImportFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      void onImportCustomers(file);
-    }
-    event.target.value = "";
-  };
 
   // Check if anything has event in May
   const hasEventInMont = (kh: KhachHang) => {
@@ -124,26 +108,6 @@ export default function CustomerList({
               ))}
             </select>
           </div>
-
-          <input
-            ref={importInputRef}
-            type="file"
-            accept=".xlsx,.xls"
-            className="sr-only"
-            id="import-customers-excel-input"
-            onChange={handleImportFileChange}
-          />
-
-          <button
-            type="button"
-            onClick={() => importInputRef.current?.click()}
-            disabled={customerImportState.phase !== "idle"}
-            className="w-full sm:w-auto border border-slate-200 bg-white text-slate-700 font-bold text-xs rounded-lg px-4 py-2.5 hover:bg-slate-50 transition-all flex items-center justify-center gap-1.5 shadow-xs shrink-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
-            id="btn-import-customers-excel"
-          >
-            <Upload className="w-3.5 h-3.5" />
-            <span>{getCustomerImportLabel(customerImportState)}</span>
-          </button>
 
           {/* New Customer Button */}
           <button

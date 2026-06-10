@@ -1,15 +1,19 @@
 import { AppHeader } from "./app/AppHeader";
 import { AppToast, DeleteCustomerConfirmToast } from "./app/AppFeedback";
+import { AppSidebar } from "./app/AppSidebar";
+import { CustomerImportPage } from "./app/CustomerImportPage";
 import { CustomerModalLayer } from "./app/CustomerModalLayer";
+import { useAppNavigation } from "./app/useAppNavigation";
 import { useCrmDashboard } from "./app/useCrmDashboard";
 import CustomerList from "./components/CustomerList";
 import MonthlyEvents from "./components/MonthlyEvents";
 
 export default function App() {
   const crm = useCrmDashboard();
+  const navigation = useAppNavigation();
 
   return (
-    <div className="min-h-screen bg-slate-50/70 text-slate-900 font-sans pb-16 antialiased" id="main-applet-root">
+    <div className="min-h-screen bg-slate-50/70 font-sans text-slate-900 antialiased" id="main-applet-root">
       <AppToast toast={crm.toast} />
       <DeleteCustomerConfirmToast
         customer={crm.pendingDeleteCustomer}
@@ -32,49 +36,68 @@ export default function App() {
         onSubmitForm={crm.submitCustomerForm}
       />
 
-      <AppHeader />
+      <AppSidebar
+        activeView={navigation.activeView}
+        isDrawerOpen={navigation.isDrawerOpen}
+        onSelectView={navigation.selectView}
+        onClose={navigation.closeDrawer}
+      />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 space-y-6">
-        {crm.loadError && (
-          <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-800">
-            {crm.loadError}
-          </div>
-        )}
+      <div className="min-h-screen lg:pl-64">
+        <AppHeader activeView={navigation.activeView} onOpenMenu={navigation.openDrawer} />
 
-        {crm.isLoading && (
-          <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-800">
-            Đang tải dữ liệu CRM...
-          </div>
-        )}
+        <main className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+          {crm.loadError && (
+            <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-800">
+              {crm.loadError}
+            </div>
+          )}
 
-        <section id="banner-events-this-month">
-          <MonthlyEvents
-            events={crm.events}
-            selectedMonth={crm.selectedMonth}
-            currentMonth={crm.currentMonth}
-            onSelectedMonthChange={crm.setSelectedMonth}
-            onSelectCustomer={crm.openCustomerDetails}
-            onStartNote={crm.startCustomerNote}
-          />
-        </section>
+          {crm.isLoading && (
+            <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-800">
+              Đang tải dữ liệu CRM...
+            </div>
+          )}
 
-        <section id="main-list-crm-panel">
-          <CustomerList
-            customers={crm.customers}
-            onSelectCustomer={crm.openCustomerDetails}
-            onEditCustomer={crm.openEditCustomerForm}
-            onDeleteCustomer={crm.requestDeleteCustomer}
-            searchTerm={crm.searchTerm}
-            managerFilter={crm.managerFilter}
-            managerOptions={crm.managerOptions}
-            onSearchTermChange={crm.setSearchTerm}
-            onManagerFilterChange={crm.setManagerFilter}
-            onAddNewClick={crm.openAddCustomerForm}
-            onImportCustomers={crm.importCustomersFromExcel}
-            customerImportState={crm.customerImportState}
-          />
-        </section>
-      </main>
+          {navigation.activeView === "events" && (
+            <section id="banner-events-this-month">
+              <MonthlyEvents
+                events={crm.events}
+                selectedMonth={crm.selectedMonth}
+                currentMonth={crm.currentMonth}
+                onSelectedMonthChange={crm.setSelectedMonth}
+                onSelectCustomer={crm.openCustomerDetails}
+                onStartNote={crm.startCustomerNote}
+              />
+            </section>
+          )}
+
+          {navigation.activeView === "customers" && (
+            <section id="main-list-crm-panel">
+              <CustomerList
+                customers={crm.customers}
+                onSelectCustomer={crm.openCustomerDetails}
+                onEditCustomer={crm.openEditCustomerForm}
+                onDeleteCustomer={crm.requestDeleteCustomer}
+                searchTerm={crm.searchTerm}
+                managerFilter={crm.managerFilter}
+                managerOptions={crm.managerOptions}
+                onSearchTermChange={crm.setSearchTerm}
+                onManagerFilterChange={crm.setManagerFilter}
+                onAddNewClick={crm.openAddCustomerForm}
+              />
+            </section>
+          )}
+
+          {navigation.activeView === "import" && (
+            <CustomerImportPage
+              customerImportState={crm.customerImportState}
+              onImportCustomers={crm.importCustomersFromExcel}
+              onViewCustomers={() => navigation.selectView("customers")}
+            />
+          )}
+        </main>
+      </div>
     </div>
   );
 }

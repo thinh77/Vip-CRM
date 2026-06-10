@@ -149,14 +149,13 @@ export function useCrmDashboard() {
     }
   }, [closeCustomerForm, customerToEdit, refreshAll, showToast]);
 
-  const importCustomersFromExcel = useCallback(async (file: File) => {
+  const importCustomersFromExcel = useCallback(async (file: File): Promise<number> => {
     setCustomerImportState({ phase: "parsing", count: 0 });
 
     try {
       const importedCustomers = await parseCustomerImportFile(file);
       if (importedCustomers.length === 0) {
-        showToast("File Excel không có dòng dữ liệu khách hàng.", "error");
-        return;
+        throw new Error("File Excel không có dòng dữ liệu khách hàng.");
       }
 
       setCustomerImportState({ phase: "saving", count: importedCustomers.length });
@@ -164,8 +163,11 @@ export function useCrmDashboard() {
       setCustomerImportState({ phase: "refreshing", count: result.importedCount });
       await refreshAll();
       showToast(`Đã import ${result.importedCount} khách hàng từ Excel.`);
+      return result.importedCount;
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Không thể import khách hàng từ Excel.", "error");
+      const message = error instanceof Error ? error.message : "Không thể import khách hàng từ Excel.";
+      showToast(message, "error");
+      throw error instanceof Error ? error : new Error(message);
     } finally {
       setCustomerImportState({ phase: "idle", count: 0 });
     }

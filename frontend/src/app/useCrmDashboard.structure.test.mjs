@@ -46,13 +46,16 @@ test("CRM dashboard hook owns customer and log mutations", () => {
 test("CRM dashboard hook owns Excel customer import flow", () => {
   assert.match(source, /import \{[^}]*parseCustomerImportFile[^}]*\} from "\.\/customerImport"/s);
   assert.match(source, /const \[customerImportState, setCustomerImportState\]/);
-  assert.match(source, /const importCustomersFromExcel = useCallback\(async \(file: File\) => \{/);
+  assert.match(source, /const importCustomersFromExcel = useCallback\(async \(file: File\): Promise<number> => \{/);
   assert.match(source, /setCustomerImportState\(\{ phase: "parsing", count: 0 \}\)/);
   assert.match(source, /parseCustomerImportFile\(file\)/);
   assert.match(source, /setCustomerImportState\(\{ phase: "saving", count: importedCustomers\.length \}\)/);
   assert.match(source, /customersApi\.importMany\(importedCustomers\)/);
   assert.match(source, /setCustomerImportState\(\{ phase: "refreshing", count: result\.importedCount \}\)/);
   assert.match(source, /await refreshAll\(\)/);
+  assert.match(source, /return result\.importedCount/);
+  assert.match(source, /showToast\(message, "error"\)/);
+  assert.match(source, /throw error instanceof Error \? error : new Error\(message\)/);
   assert.doesNotMatch(source, /for \(const customer of importedCustomers\)/);
   assert.doesNotMatch(source, /customersApi\.create\(customer\)/);
   assert.match(source, /importCustomersFromExcel,/);
