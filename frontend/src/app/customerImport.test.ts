@@ -4,6 +4,7 @@ import * as XLSX from "xlsx";
 import { ChucVu } from "../types";
 import {
   getCustomerImportLabel,
+  isSupportedCustomerImportFile,
   mapCustomerImportSheet,
   normalizeImportHeaders,
   parseCustomerImportFile
@@ -102,4 +103,11 @@ test("formats each customer import phase for the action button", () => {
   assert.equal(getCustomerImportLabel({ phase: "parsing", count: 0 }), "Đang đọc file...");
   assert.equal(getCustomerImportLabel({ phase: "saving", count: 2500 }), "Đang lưu 2500 khách hàng...");
   assert.equal(getCustomerImportLabel({ phase: "refreshing", count: 2500 }), "Đang cập nhật dữ liệu...");
+});
+
+test("accepts only Excel workbook files for customer import", () => {
+  assert.equal(isSupportedCustomerImportFile(new File([], "khach-hang.xlsx")), true);
+  assert.equal(isSupportedCustomerImportFile(new File([], "KHACH-HANG.XLS")), true);
+  assert.equal(isSupportedCustomerImportFile(new File([], "khach-hang.csv")), false);
+  assert.equal(isSupportedCustomerImportFile(new File([], "khach-hang.xlsx.exe")), false);
 });

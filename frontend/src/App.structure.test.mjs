@@ -6,7 +6,9 @@ const source = readFileSync(new URL("./App.tsx", import.meta.url), "utf8");
 
 test("App is a thin composition shell", () => {
   assert.match(source, /import \{ useCrmDashboard \} from "\.\/app\/useCrmDashboard"/);
-  assert.match(source, /<AppHeader \/>/);
+  assert.match(source, /import \{ useAppNavigation \} from "\.\/app\/useAppNavigation"/);
+  assert.match(source, /<AppSidebar/);
+  assert.match(source, /<AppHeader/);
   assert.match(source, /<AppToast toast=\{crm\.toast\} \/>/);
   assert.match(source, /<DeleteCustomerConfirmToast/);
   assert.match(source, /<CustomerModalLayer/);
@@ -19,7 +21,17 @@ test("App is a thin composition shell", () => {
   assert.doesNotMatch(source, /const loadCustomers|const refreshAll|handleFormSubmit/);
 });
 
-test("App still wires monthly events to the extracted CRM controller", () => {
+test("App renders exactly one typed CRM view at a time", () => {
+  assert.match(source, /const navigation = useAppNavigation\(\)/);
+  assert.match(source, /navigation\.activeView === "events"/);
+  assert.match(source, /navigation\.activeView === "customers"/);
+  assert.match(source, /navigation\.activeView === "import"/);
+  assert.match(source, /onSelectView=\{navigation\.selectView\}/);
+  assert.match(source, /onOpenMenu=\{navigation\.openDrawer\}/);
+  assert.match(source, /onClose=\{navigation\.closeDrawer\}/);
+});
+
+test("App wires monthly events to the extracted CRM controller", () => {
   assert.match(source, /events=\{crm\.events\}/);
   assert.match(source, /selectedMonth=\{crm\.selectedMonth\}/);
   assert.match(source, /currentMonth=\{crm\.currentMonth\}/);
@@ -30,6 +42,8 @@ test("App still wires monthly events to the extracted CRM controller", () => {
 });
 
 test("App still wires customer list filters and actions to the extracted CRM controller", () => {
+  const customerListBlock = source.match(/<CustomerList[\s\S]*?\/>/)?.[0] ?? "";
+
   assert.match(source, /customers=\{crm\.customers\}/);
   assert.match(source, /onSelectCustomer=\{crm\.openCustomerDetails\}/);
   assert.match(source, /onEditCustomer=\{crm\.openEditCustomerForm\}/);
@@ -40,10 +54,17 @@ test("App still wires customer list filters and actions to the extracted CRM con
   assert.match(source, /onSearchTermChange=\{crm\.setSearchTerm\}/);
   assert.match(source, /onManagerFilterChange=\{crm\.setManagerFilter\}/);
   assert.match(source, /onAddNewClick=\{crm\.openAddCustomerForm\}/);
-  assert.match(source, /onImportCustomers=\{crm\.importCustomersFromExcel\}/);
-  assert.match(source, /customerImportState=\{crm\.customerImportState\}/);
+  assert.doesNotMatch(customerListBlock, /onImportCustomers=/);
+  assert.doesNotMatch(customerListBlock, /customerImportState=/);
   assert.doesNotMatch(source, /roleFilter/);
   assert.doesNotMatch(source, /onRoleFilterChange/);
+});
+
+test("App wires the dedicated import page and customer-list navigation", () => {
+  assert.match(source, /<CustomerImportPage/);
+  assert.match(source, /customerImportState=\{crm\.customerImportState\}/);
+  assert.match(source, /onImportCustomers=\{crm\.importCustomersFromExcel\}/);
+  assert.match(source, /onViewCustomers=\{\(\) => navigation\.selectView\("customers"\)\}/);
 });
 
 test("App keeps loading and error display at the shell level", () => {
