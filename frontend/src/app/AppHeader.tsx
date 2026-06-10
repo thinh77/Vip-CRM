@@ -1,4 +1,5 @@
 import { Menu } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import type { AppView } from "./useAppNavigation";
 
 interface AppHeaderProps {
@@ -23,6 +24,7 @@ const viewContent: Record<AppView, { title: string; description: string }> = {
 
 export function AppHeader({ activeView, onOpenMenu }: AppHeaderProps) {
   const content = viewContent[activeView];
+  const shouldReduceMotion = useReducedMotion();
   const systemDate = new Intl.DateTimeFormat("vi-VN", {
     day: "2-digit",
     month: "2-digit",
@@ -41,13 +43,36 @@ export function AppHeader({ activeView, onOpenMenu }: AppHeaderProps) {
           >
             <Menu className="h-5 w-5" />
           </button>
-          <div className="min-w-0">
-            <h1 className="truncate text-base font-extrabold tracking-tight text-slate-900 sm:text-lg">
-              {content.title}
-            </h1>
-            <p className="hidden truncate text-[11px] font-medium text-slate-500 sm:block">
-              {content.description}
-            </p>
+          <div className="relative min-w-0 flex-1 overflow-hidden">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={activeView}
+                initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 4 }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                  transition: {
+                    duration: shouldReduceMotion ? 0.08 : 0.16,
+                    ease: [0.22, 1, 0.36, 1]
+                  }
+                }}
+                exit={{
+                  opacity: 0,
+                  y: 0,
+                  transition: {
+                    duration: shouldReduceMotion ? 0.08 : 0.09,
+                    ease: "easeOut"
+                  }
+                }}
+              >
+                <h1 className="truncate text-base font-extrabold tracking-tight text-slate-900 sm:text-lg">
+                  {content.title}
+                </h1>
+                <p className="hidden truncate text-[11px] font-medium text-slate-500 sm:block">
+                  {content.description}
+                </p>
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
 
