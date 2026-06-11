@@ -5,12 +5,11 @@ import test from "node:test";
 const fileUrl = new URL("./useAppNavigation.ts", import.meta.url);
 const source = existsSync(fileUrl) ? readFileSync(fileUrl, "utf8") : "";
 
-test("navigation defaults to events and exposes typed CRM views", () => {
-  assert.match(source, /export type AppView = "events" \| "customers" \| "import"/);
-  assert.match(source, /useState<AppView>\("events"\)/);
-  assert.match(source, /const selectView = useCallback\(\(view: AppView\) => \{/);
-  assert.match(source, /setActiveView\(view\)/);
-  assert.match(source, /setIsDrawerOpen\(false\)/);
+test("navigation derives changes from the current browser location", () => {
+  assert.match(source, /import \{ useLocation \} from "react-router-dom"/);
+  assert.match(source, /const location = useLocation\(\)/);
+  assert.match(source, /const previousPathnameRef = useRef\(location\.pathname\)/);
+  assert.doesNotMatch(source, /AppView|activeView|setActiveView|selectView/);
 });
 
 test("mobile drawer can open, close, and close on Escape", () => {
@@ -22,15 +21,16 @@ test("mobile drawer can open, close, and close on Escape", () => {
   assert.match(source, /window\.removeEventListener\("keydown", handleKeyDown\)/);
 });
 
-test("view selection closes the drawer, ignores the active view, and scrolls to the top", () => {
+test("pathname changes close the drawer and scroll to the top after initial load", () => {
   assert.match(source, /import \{ useReducedMotion \} from "motion\/react"/);
   assert.match(source, /const shouldReduceMotion = useReducedMotion\(\)/);
   assert.match(source, /setIsDrawerOpen\(false\)/);
-  assert.match(source, /if \(view === activeView\) return/);
-  assert.match(source, /setActiveView\(view\)/);
-  assert.match(source, /requestAnimationFrame\(\(\) => \{/);
+  assert.match(source, /if \(previousPathnameRef\.current === location\.pathname\) return/);
+  assert.match(source, /previousPathnameRef\.current = location\.pathname/);
+  assert.match(source, /const frame = requestAnimationFrame\(\(\) => \{/);
   assert.match(source, /window\.scrollTo\(\{/);
   assert.match(source, /top: 0/);
   assert.match(source, /behavior: shouldReduceMotion === true \? "auto" : "smooth"/);
-  assert.match(source, /\}, \[activeView, shouldReduceMotion\]\)/);
+  assert.match(source, /return \(\) => cancelAnimationFrame\(frame\)/);
+  assert.match(source, /\}, \[location\.pathname, shouldReduceMotion\]\)/);
 });

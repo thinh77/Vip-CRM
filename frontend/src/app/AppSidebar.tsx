@@ -1,35 +1,34 @@
 import { CalendarDays, FileUp, Users, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "motion/react";
-import type { AppView } from "./useAppNavigation";
+import { NavLink } from "react-router-dom";
+import { APP_ROUTES } from "./appRoutes";
 
 interface AppSidebarProps {
-  activeView: AppView;
   isDrawerOpen: boolean;
-  onSelectView: (view: AppView) => void;
+  onNavigate: () => void;
   onClose: () => void;
 }
 
 interface NavigationItem {
   icon: LucideIcon;
   label: string;
-  view: AppView;
+  path: string;
 }
 
 const navigationItems: NavigationItem[] = [
-  { view: "events", label: "Sự kiện", icon: CalendarDays },
-  { view: "customers", label: "Khách hàng", icon: Users },
-  { view: "import", label: "Import khách hàng", icon: FileUp }
+  { path: APP_ROUTES.events, label: "Sự kiện", icon: CalendarDays },
+  { path: APP_ROUTES.customers, label: "Khách hàng", icon: Users },
+  { path: APP_ROUTES.import, label: "Import khách hàng", icon: FileUp }
 ];
 
 interface SidebarContentProps {
-  activeView: AppView;
   layoutGroupId: string;
-  onSelectView: (view: AppView) => void;
+  onNavigate: () => void;
   onClose?: () => void;
 }
 
-function SidebarContent({ activeView, layoutGroupId, onSelectView, onClose }: SidebarContentProps) {
+function SidebarContent({ layoutGroupId, onNavigate, onClose }: SidebarContentProps) {
   const shouldReduceMotion = useReducedMotion();
 
   return (
@@ -58,37 +57,39 @@ function SidebarContent({ activeView, layoutGroupId, onSelectView, onClose }: Si
 
       <LayoutGroup id={layoutGroupId}>
         <nav className="flex-1 space-y-2 px-3 py-5" aria-label="Điều hướng CRM">
-          {navigationItems.map(({ icon: Icon, label, view }) => {
-            const isActive = activeView === view;
-
-            return (
-              <button
-                key={view}
-                type="button"
-                onClick={() => onSelectView(view)}
-                aria-current={isActive ? "page" : undefined}
-                className={`relative isolate flex w-full items-center gap-3 overflow-hidden rounded-xl px-3.5 py-3 text-left text-sm font-bold transition-colors ${
+          {navigationItems.map(({ icon: Icon, label, path }) => (
+            <NavLink
+              key={path}
+              to={path}
+              end
+              onClick={onNavigate}
+              className={({ isActive }) =>
+                `relative isolate flex w-full items-center gap-3 overflow-hidden rounded-xl px-3.5 py-3 text-left text-sm font-bold transition-colors ${
                   isActive ? "text-white" : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
-                }`}
-              >
-                {isActive && (
-                  <motion.span
-                    layoutId={shouldReduceMotion ? undefined : "sidebar-active-indicator"}
-                    className="absolute inset-0 z-0 rounded-xl bg-[#B01137] shadow-md shadow-rose-900/15"
-                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                  />
-                )}
-                <span
-                  className={`relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors ${
-                    isActive ? "bg-white/15 text-white" : "bg-slate-100 text-slate-500"
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                </span>
-                <span className="relative z-10">{label}</span>
-              </button>
-            );
-          })}
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <motion.span
+                      layoutId={shouldReduceMotion ? undefined : "sidebar-active-indicator"}
+                      className="absolute inset-0 z-0 rounded-xl bg-[#B01137] shadow-md shadow-rose-900/15"
+                      transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                    />
+                  )}
+                  <span
+                    className={`relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                      isActive ? "bg-white/15 text-white" : "bg-slate-100 text-slate-500"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  <span className="relative z-10">{label}</span>
+                </>
+              )}
+            </NavLink>
+          ))}
         </nav>
       </LayoutGroup>
 
@@ -101,7 +102,7 @@ function SidebarContent({ activeView, layoutGroupId, onSelectView, onClose }: Si
   );
 }
 
-export function AppSidebar({ activeView, isDrawerOpen, onSelectView, onClose }: AppSidebarProps) {
+export function AppSidebar({ isDrawerOpen, onNavigate, onClose }: AppSidebarProps) {
   const shouldReduceMotion = useReducedMotion();
   const drawerOffset = shouldReduceMotion ? 0 : "-100%";
   const overlayDuration = shouldReduceMotion ? 0.08 : 0.16;
@@ -111,9 +112,8 @@ export function AppSidebar({ activeView, isDrawerOpen, onSelectView, onClose }: 
     <>
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-slate-200 bg-white lg:flex">
         <SidebarContent
-          activeView={activeView}
           layoutGroupId="desktop-sidebar"
-          onSelectView={onSelectView}
+          onNavigate={onNavigate}
         />
       </aside>
 
@@ -163,9 +163,8 @@ export function AppSidebar({ activeView, isDrawerOpen, onSelectView, onClose }: 
               }}
             >
               <SidebarContent
-                activeView={activeView}
                 layoutGroupId="mobile-sidebar"
-                onSelectView={onSelectView}
+                onNavigate={onNavigate}
                 onClose={onClose}
               />
             </motion.aside>

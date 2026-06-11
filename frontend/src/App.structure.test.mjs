@@ -7,6 +7,7 @@ const source = readFileSync(new URL("./App.tsx", import.meta.url), "utf8");
 test("App is a thin composition shell", () => {
   assert.match(source, /import \{ useCrmDashboard \} from "\.\/app\/useCrmDashboard"/);
   assert.match(source, /import \{ useAppNavigation \} from "\.\/app\/useAppNavigation"/);
+  assert.match(source, /import \{ APP_ROUTES, getAppView \} from "\.\/app\/appRoutes"/);
   assert.match(source, /<AppSidebar/);
   assert.match(source, /<AppHeader/);
   assert.match(source, /<AppToast toast=\{crm\.toast\} \/>/);
@@ -21,14 +22,20 @@ test("App is a thin composition shell", () => {
   assert.doesNotMatch(source, /const loadCustomers|const refreshAll|handleFormSubmit/);
 });
 
-test("App renders exactly one typed CRM view at a time", () => {
+test("App renders exactly one URL-routed CRM view at a time", () => {
   assert.match(source, /const navigation = useAppNavigation\(\)/);
-  assert.match(source, /navigation\.activeView === "events"/);
-  assert.match(source, /navigation\.activeView === "customers"/);
-  assert.match(source, /navigation\.activeView === "import"/);
-  assert.match(source, /onSelectView=\{navigation\.selectView\}/);
+  assert.match(source, /const location = useLocation\(\)/);
+  assert.match(source, /const activeView = getAppView\(location\.pathname\)/);
+  assert.match(source, /<Routes location=\{location\}>/);
+  assert.match(source, /<Route\s+path=\{APP_ROUTES\.events\}/);
+  assert.match(source, /<Route\s+path=\{APP_ROUTES\.customers\}/);
+  assert.match(source, /<Route\s+path=\{APP_ROUTES\.import\}/);
+  assert.match(source, /<Route path="\/" element=\{<Navigate to=\{APP_ROUTES\.events\} replace \/>\} \/>/);
+  assert.match(source, /<Route path="\*" element=\{<Navigate to=\{APP_ROUTES\.events\} replace \/>\} \/>/);
+  assert.match(source, /onNavigate=\{navigation\.closeDrawer\}/);
   assert.match(source, /onOpenMenu=\{navigation\.openDrawer\}/);
   assert.match(source, /onClose=\{navigation\.closeDrawer\}/);
+  assert.doesNotMatch(source, /navigation\.activeView|navigation\.selectView/);
 });
 
 test("App wires monthly events to the extracted CRM controller", () => {
@@ -64,7 +71,7 @@ test("App wires the dedicated import page and customer-list navigation", () => {
   assert.match(source, /<CustomerImportPage/);
   assert.match(source, /customerImportState=\{crm\.customerImportState\}/);
   assert.match(source, /onImportCustomers=\{crm\.importCustomersFromExcel\}/);
-  assert.match(source, /onViewCustomers=\{\(\) => navigation\.selectView\("customers"\)\}/);
+  assert.doesNotMatch(source, /onViewCustomers=/);
 });
 
 test("App keeps loading and error display at the shell level", () => {
@@ -78,7 +85,7 @@ test("App animates only the keyed active page with the approved transition", () 
   assert.match(source, /const shouldReduceMotion = useReducedMotion\(\)/);
   assert.match(source, /const pageOffset = shouldReduceMotion \? 0 : 8/);
   assert.match(source, /<AnimatePresence mode="wait" initial=\{false\}>/);
-  assert.match(source, /<motion\.div\s+key=\{navigation\.activeView\}/);
+  assert.match(source, /<motion\.div\s+key=\{location\.pathname\}/);
   assert.match(source, /initial=\{\{ opacity: 0, y: pageOffset \}\}/);
   assert.match(source, /animate=\{\{\s*opacity: 1,\s*y: 0,/s);
   assert.match(source, /duration: shouldReduceMotion \? 0\.08 : 0\.2/);

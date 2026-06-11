@@ -1,6 +1,6 @@
 import { Menu } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import type { AppView } from "./useAppNavigation";
+import type { AppView } from "./appRoutes";
 
 interface AppHeaderProps {
   activeView: AppView;

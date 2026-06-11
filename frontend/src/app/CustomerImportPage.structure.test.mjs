@@ -35,10 +35,13 @@ test("import page documents the current workbook contract", () => {
 });
 
 test("import page presents progress, inline errors, success, and customer navigation", () => {
+  assert.match(source, /import \{ Link \} from "react-router-dom"/);
+  assert.match(source, /import \{ APP_ROUTES \} from "\.\/appRoutes"/);
   assert.match(source, /customerImportState\.phase !== "idle"/);
   assert.match(source, /getCustomerImportLabel\(customerImportState\)/);
   assert.match(source, /id="customer-import-error"/);
   assert.match(source, /id="customer-import-success"/);
   assert.match(source, /Xem danh sách khách hàng/);
-  assert.match(source, /onViewCustomers/);
+  assert.match(source, /<Link\s+to=\{APP_ROUTES\.customers\}/);
+  assert.doesNotMatch(source, /onViewCustomers/);
 });

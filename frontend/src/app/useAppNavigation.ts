@@ -1,25 +1,27 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "motion/react";
-
-export type AppView = "events" | "customers" | "import";
+import { useLocation } from "react-router-dom";
 
 export function useAppNavigation() {
-  const [activeView, setActiveView] = useState<AppView>("events");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const shouldReduceMotion = useReducedMotion();
+  const location = useLocation();
+  const previousPathnameRef = useRef(location.pathname);
 
-  const selectView = useCallback((view: AppView) => {
+  useEffect(() => {
     setIsDrawerOpen(false);
-    if (view === activeView) return;
+    if (previousPathnameRef.current === location.pathname) return;
 
-    setActiveView(view);
-    requestAnimationFrame(() => {
+    previousPathnameRef.current = location.pathname;
+    const frame = requestAnimationFrame(() => {
       window.scrollTo({
         top: 0,
         behavior: shouldReduceMotion === true ? "auto" : "smooth"
       });
     });
-  }, [activeView, shouldReduceMotion]);
+
+    return () => cancelAnimationFrame(frame);
+  }, [location.pathname, shouldReduceMotion]);
 
   const openDrawer = useCallback(() => setIsDrawerOpen(true), []);
   const closeDrawer = useCallback(() => setIsDrawerOpen(false), []);
@@ -38,10 +40,8 @@ export function useAppNavigation() {
   }, [closeDrawer, isDrawerOpen]);
 
   return {
-    activeView,
     closeDrawer,
     isDrawerOpen,
-    openDrawer,
-    selectView
+    openDrawer
   };
 }

@@ -6,14 +6,19 @@ const fileUrl = new URL("./AppSidebar.tsx", import.meta.url);
 const source = existsSync(fileUrl) ? readFileSync(fileUrl, "utf8") : "";
 
 test("sidebar exposes the three approved CRM destinations", () => {
+  assert.match(source, /import \{ NavLink \} from "react-router-dom"/);
+  assert.match(source, /import \{ APP_ROUTES \} from "\.\/appRoutes"/);
   assert.match(source, /Sự kiện/);
   assert.match(source, /Khách hàng/);
   assert.match(source, /Import khách hàng/);
   assert.match(source, /CalendarDays/);
   assert.match(source, /Users/);
   assert.match(source, /FileUp/);
-  assert.match(source, /aria-current=\{isActive \? "page" : undefined\}/);
+  assert.match(source, /<NavLink/);
+  assert.match(source, /to=\{path\}/);
+  assert.match(source, /\send/);
   assert.match(source, /bg-\[#B01137\]/);
+  assert.doesNotMatch(source, /onSelectView|activeView: AppView/);
 });
 
 test("sidebar has a fixed desktop rail and an accessible mobile drawer", () => {
@@ -33,7 +38,6 @@ test("sidebar moves one shared active indicator between destinations", () => {
   assert.match(source, /type: "spring"/);
   assert.match(source, /stiffness: 420/);
   assert.match(source, /damping: 34/);
-  assert.match(source, /aria-current=\{isActive \? "page" : undefined\}/);
   assert.match(source, /layoutGroupId="desktop-sidebar"/);
   assert.match(source, /layoutGroupId="mobile-sidebar"/);
 });

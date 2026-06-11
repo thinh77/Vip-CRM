@@ -48,3 +48,12 @@ npm run dev
 ```
 
 Open http://localhost:3000.
+
+## Production SPA Routing
+
+The frontend uses browser routes for `/events`, `/customers`, and `/customers/import`.
+Configure the production web server to return `index.html` for those paths and
+for unknown frontend paths so direct links and browser refreshes keep working.
+
+Do not apply the frontend fallback to `/api/*`; API requests must continue to
+reach the backend service.

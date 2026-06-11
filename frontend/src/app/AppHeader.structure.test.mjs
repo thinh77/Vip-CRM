@@ -5,6 +5,7 @@ import test from "node:test";
 const source = readFileSync(new URL("./AppHeader.tsx", import.meta.url), "utf8");
 
 test("topbar describes the active view and exposes the mobile menu", () => {
+  assert.match(source, /import type \{ AppView \} from "\.\/appRoutes"/);
   assert.match(source, /activeView: AppView/);
   assert.match(source, /onOpenMenu: \(\) => void/);
   assert.match(source, /aria-label="Mở menu điều hướng"/);

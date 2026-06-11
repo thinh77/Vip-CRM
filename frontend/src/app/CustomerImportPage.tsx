@@ -8,6 +8,8 @@ import {
   UploadCloud,
   X
 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { APP_ROUTES } from "./appRoutes";
 import {
   getCustomerImportLabel,
   isSupportedCustomerImportFile
@@ -17,7 +19,6 @@ import type { CustomerImportState } from "./customerImport";
 interface CustomerImportPageProps {
   customerImportState: CustomerImportState;
   onImportCustomers: (file: File) => Promise<number>;
-  onViewCustomers: () => void;
 }
 
 const importColumns = [
@@ -35,8 +36,7 @@ const importColumns = [
 
 export function CustomerImportPage({
   customerImportState,
-  onImportCustomers,
-  onViewCustomers
+  onImportCustomers
 }: CustomerImportPageProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -201,13 +201,12 @@ export function CustomerImportPage({
                   <p className="text-sm font-extrabold text-emerald-950">
                     Đã import thành công {importedCount} khách hàng.
                   </p>
-                  <button
-                    type="button"
-                    onClick={onViewCustomers}
+                  <Link
+                    to={APP_ROUTES.customers}
                     className="mt-2 text-xs font-extrabold text-emerald-800 underline underline-offset-4 hover:text-emerald-950"
                   >
                     Xem danh sách khách hàng
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>
