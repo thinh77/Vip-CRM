@@ -114,6 +114,8 @@ export default function App() {
                         searchTerm={crm.searchTerm}
                         managerFilter={crm.managerFilter}
                         managerOptions={crm.managerOptions}
+                        currentPage={crm.customerPage}
+                        onPageChange={crm.setCustomerPage}
                         onSearchTermChange={crm.setSearchTerm}
                         onManagerFilterChange={crm.setManagerFilter}
                         onAddNewClick={crm.openAddCustomerForm}

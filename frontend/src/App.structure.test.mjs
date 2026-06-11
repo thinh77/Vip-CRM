@@ -58,6 +58,8 @@ test("App still wires customer list filters and actions to the extracted CRM con
   assert.match(source, /searchTerm=\{crm\.searchTerm\}/);
   assert.match(source, /managerFilter=\{crm\.managerFilter\}/);
   assert.match(source, /managerOptions=\{crm\.managerOptions\}/);
+  assert.match(source, /currentPage=\{crm\.customerPage\}/);
+  assert.match(source, /onPageChange=\{crm\.setCustomerPage\}/);
   assert.match(source, /onSearchTermChange=\{crm\.setSearchTerm\}/);
   assert.match(source, /onManagerFilterChange=\{crm\.setManagerFilter\}/);
   assert.match(source, /onAddNewClick=\{crm\.openAddCustomerForm\}/);

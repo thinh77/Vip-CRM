@@ -8,6 +8,7 @@ import { getCurrentMonth } from "../utils";
 import { filterCustomers, getManagerOptions } from "./customerFilters";
 import { parseCustomerImportFile } from "./customerImport";
 import type { CustomerImportState } from "./customerImport";
+import { clampCustomerPage } from "./customerPagination";
 
 export type ToastMessage = {
   message: string;
@@ -29,9 +30,10 @@ export function useCrmDashboard() {
   const [pendingDeleteCustomer, setPendingDeleteCustomer] = useState<KhachHang | null>(null);
   const [events, setEvents] = useState<CareEvent[]>([]);
   const [stats, setStats] = useState<DashboardStats>(emptyStats);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [managerFilter, setManagerFilter] = useState("All");
+  const [searchTerm, setSearchTermState] = useState("");
+  const [managerFilter, setManagerFilterState] = useState("All");
   const [managerOptions, setManagerOptions] = useState<string[]>([]);
+  const [customerPage, setCustomerPage] = useState(1);
   const [noteFocusCustomerId, setNoteFocusCustomerId] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,6 +54,20 @@ export function useCrmDashboard() {
     () => allCustomers.find((customer) => customer.id === activeCustomerId),
     [activeCustomerId, allCustomers]
   );
+
+  useEffect(() => {
+    setCustomerPage((currentPage) => clampCustomerPage(currentPage, customers.length));
+  }, [customers.length]);
+
+  const setSearchTerm = useCallback((value: string) => {
+    setSearchTermState(value);
+    setCustomerPage(1);
+  }, []);
+
+  const setManagerFilter = useCallback((value: string) => {
+    setManagerFilterState(value);
+    setCustomerPage(1);
+  }, []);
 
   const showToast = useCallback((message: string, type: ToastMessage["type"] = "success") => {
     setToast({ message, type });
@@ -268,6 +284,7 @@ export function useCrmDashboard() {
     closeCustomerForm,
     confirmDeleteCustomer,
     currentMonth,
+    customerPage,
     customerToEdit,
     customers,
     deleteInteraction,
@@ -289,6 +306,7 @@ export function useCrmDashboard() {
     searchTerm,
     selectedMonth,
     setManagerFilter,
+    setCustomerPage,
     setSearchTerm,
     setSelectedMonth,
     startCustomerNote,

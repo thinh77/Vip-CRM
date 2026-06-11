@@ -5,6 +5,12 @@
 
 import { KhachHang, ChucVu } from "../types";
 import { formatDateVN, isDateInMonth, getCurrentMonth } from "../utils";
+import { useRef } from "react";
+import { useReducedMotion } from "motion/react";
+import {
+  getPaginationItems,
+  paginateCustomers
+} from "../app/customerPagination";
 import { 
   Search, Eye, Edit2, Trash2, Phone, Building, User, Filter, 
   Sparkles, CheckCircle, Percent, Award, Cake
@@ -18,6 +24,8 @@ interface CustomerListProps {
   searchTerm: string;
   managerFilter: string;
   managerOptions: string[];
+  currentPage: number;
+  onPageChange: (page: number) => void;
   onSearchTermChange: (value: string) => void;
   onManagerFilterChange: (value: string) => void;
   onAddNewClick: () => void;
@@ -31,12 +39,30 @@ export default function CustomerList({
   searchTerm,
   managerFilter,
   managerOptions,
+  currentPage,
+  onPageChange,
   onSearchTermChange,
   onManagerFilterChange,
   onAddNewClick
 }: CustomerListProps) {
+  const panelRef = useRef<HTMLDivElement>(null);
+  const shouldReduceMotion = useReducedMotion();
   const currentMonth = getCurrentMonth();
-  const finalCustomers = customers;
+  const pagination = paginateCustomers(customers, currentPage);
+  const paginatedCustomers = pagination.items;
+  const paginationItems = getPaginationItems(pagination.page, pagination.totalPages);
+
+  const handlePageChange = (page: number) => {
+    if (page === pagination.page) return;
+
+    onPageChange(page);
+    requestAnimationFrame(() => {
+      panelRef.current?.scrollIntoView({
+        behavior: shouldReduceMotion === true ? "auto" : "smooth",
+        block: "start"
+      });
+    });
+  };
 
   // Check if anything has event in May
   const hasEventInMont = (kh: KhachHang) => {
@@ -64,12 +90,16 @@ export default function CustomerList({
   };
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden" id="customer-list-panel">
+    <div
+      ref={panelRef}
+      className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden"
+      id="customer-list-panel"
+    >
       {/* Search & Filter Header */}
       <div className="p-6 border-b border-slate-200 bg-slate-50/30 flex flex-col md:flex-row gap-4 items-center justify-between">
         <div className="flex flex-col space-y-1 self-start md:self-auto">
           <h3 className="text-base font-bold font-sans text-slate-800">
-            Danh Sách Khách Hàng Chăm Sóc ({finalCustomers.length})
+            Danh Sách Khách Hàng Chăm Sóc ({customers.length})
           </h3>
           <p className="text-xs text-slate-500">
             Tìm kiếm khách hàng theo Tên, Mã số, Tên VIP hoặc cán bộ quản lý
@@ -121,7 +151,7 @@ export default function CustomerList({
       </div>
 
       {/* Main lists */}
-      {finalCustomers.length === 0 ? (
+      {customers.length === 0 ? (
         <div className="text-center py-16 px-4" id="empty-customer-state">
           <div className="mx-auto w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
             <Search className="w-6 h-6" />
@@ -146,7 +176,7 @@ export default function CustomerList({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-150">
-                {finalCustomers.map((kh) => {
+                {paginatedCustomers.map((kh) => {
                   const hasEventsThisMonth = hasEventInMont(kh);
                   
                   return (
@@ -313,7 +343,7 @@ export default function CustomerList({
 
           {/* Mobile Cards list */}
           <div className="block md:hidden p-4 space-y-4" id="customers-mobile-container">
-            {finalCustomers.map((kh) => {
+            {paginatedCustomers.map((kh) => {
               const hasEventsThisMonth = hasEventInMont(kh);
 
               return (
@@ -406,6 +436,69 @@ export default function CustomerList({
                 </div>
               );
             })}
+          </div>
+
+          <div className="flex flex-col gap-3 border-t border-slate-200 bg-slate-50/60 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <p className="text-xs font-semibold text-slate-500" id="customer-list-range">
+              Đang hiển thị {pagination.start}-{pagination.end} / {customers.length} khách hàng
+            </p>
+
+            {pagination.totalPages > 1 && (
+              <nav
+                className="flex flex-wrap items-center gap-1.5"
+                id="customer-pagination"
+                aria-label="Phân trang khách hàng"
+              >
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(pagination.page - 1)}
+                  disabled={pagination.page === 1}
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition-colors hover:border-rose-200 hover:text-[#B01137] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Trước
+                </button>
+
+                {paginationItems.map((item) => {
+                  if (item === "ellipsis-left" || item === "ellipsis-right") {
+                    return (
+                      <span
+                        key={item}
+                        className="px-1 text-xs font-bold text-slate-400"
+                        aria-hidden="true"
+                      >
+                        …
+                      </span>
+                    );
+                  }
+
+                  const pageNumber = item;
+                  return (
+                    <button
+                      key={pageNumber}
+                      type="button"
+                      onClick={() => handlePageChange(pageNumber)}
+                      aria-current={pageNumber === pagination.page ? "page" : undefined}
+                      className={`h-8 min-w-8 rounded-lg border px-2 text-xs font-extrabold transition-colors ${
+                        pageNumber === pagination.page
+                          ? "border-[#B01137] bg-[#B01137] text-white"
+                          : "border-slate-200 bg-white text-slate-600 hover:border-rose-200 hover:text-[#B01137]"
+                      }`}
+                    >
+                      {pageNumber}
+                    </button>
+                  );
+                })}
+
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(pagination.page + 1)}
+                  disabled={pagination.page === pagination.totalPages}
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition-colors hover:border-rose-200 hover:text-[#B01137] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Sau
+                </button>
+              </nav>
+            )}
           </div>
         </>
       )}

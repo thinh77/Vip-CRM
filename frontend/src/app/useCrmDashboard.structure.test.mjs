@@ -16,11 +16,26 @@ test("CRM dashboard hook owns API loading and keeps App free of API clients", ()
 
 test("CRM dashboard hook owns customer filtering and manager options", () => {
   assert.match(source, /const \[allCustomers, setAllCustomers\] = useState<KhachHang\[\]>\(\[\]\)/);
-  assert.match(source, /const \[managerFilter, setManagerFilter\] = useState\("All"\)/);
+  assert.match(source, /const \[managerFilter, setManagerFilterState\] = useState\("All"\)/);
   assert.match(source, /const \[managerOptions, setManagerOptions\] = useState<string\[\]>\(\[\]\)/);
   assert.match(source, /setManagerOptions\(getManagerOptions\(list\)\)/);
   assert.match(source, /filterCustomers\(allCustomers, searchTerm, managerFilter\)/);
   assert.doesNotMatch(source, /customersApi\.list\(\{ search: searchTerm, manager: managerFilter \}\)/);
+});
+
+test("CRM dashboard keeps and normalizes customer pagination state", () => {
+  assert.match(source, /import \{ clampCustomerPage \} from "\.\/customerPagination"/);
+  assert.match(source, /const \[customerPage, setCustomerPage\] = useState\(1\)/);
+  assert.match(source, /setSearchTermState\(value\)/);
+  assert.match(source, /setManagerFilterState\(value\)/);
+  assert.match(source, /setCustomerPage\(1\)/);
+  assert.match(
+    source,
+    /setCustomerPage\(\(currentPage\) => clampCustomerPage\(currentPage, customers\.length\)\)/
+  );
+  assert.match(source, /\}, \[customers\.length\]\)/);
+  assert.match(source, /customerPage,/);
+  assert.match(source, /setCustomerPage,/);
 });
 
 test("CRM dashboard hook owns modal and note-focus control flow", () => {
